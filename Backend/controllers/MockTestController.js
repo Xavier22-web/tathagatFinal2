@@ -200,7 +200,7 @@ const getTestDetails = async (req, res) => {
       attempt: existingAttempt
     });
   } catch (error) {
-    console.error('��� Error fetching test details:', error);
+    console.error('❌ Error fetching test details:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch test details',
@@ -251,8 +251,8 @@ const startTestAttempt = async (req, res) => {
     const series = test.seriesId;
     let isEnrolled = false;
 
-    // For development user, allow access to free tests
-    if (userId === 'dev_user_id') {
+    // For development user (using fixed ObjectId), allow access to free tests
+    if (userId === '507f1f77bcf86cd799439011') {
       isEnrolled = test.isFree;
     } else if (series.enrolledStudents && series.enrolledStudents.length > 0) {
       isEnrolled = series.enrolledStudents.some(
