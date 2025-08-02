@@ -129,8 +129,16 @@ const CoursePurchase = () => {
         }
       );
 
-      const orderData = await orderRes.json();
-      if (!orderData.success) {
+      let orderData;
+      try {
+        orderData = await orderRes.json();
+      } catch (parseError) {
+        console.error("Failed to parse order creation response:", parseError);
+        alert("❌ Failed to create payment order");
+        return;
+      }
+
+      if (!orderRes.ok || !orderData.success) {
         alert("❌ Failed to create order");
         return;
       }
@@ -351,7 +359,7 @@ const CoursePurchase = () => {
               <div className="rating-summary">
                 <div>
                   <div className="rating-score">4.0</div>
-                  <div className="rating-stars">★★★★★</div>
+                  <div className="rating-stars">���★★★★</div>
                   <p className="total-rating">Total 6 Ratings</p>
                 </div>
 
