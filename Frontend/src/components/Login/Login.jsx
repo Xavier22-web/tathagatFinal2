@@ -63,6 +63,8 @@ const Login = ({ onClose, setUser }) => {
       console.error("❌ Demo login error:", error);
       const errorMessage = error.response?.data?.message || error.message || "Unknown error occurred";
       setOtpError("Demo login failed: " + errorMessage);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
