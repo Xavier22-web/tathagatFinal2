@@ -23,6 +23,9 @@ const MockTestAttempt = () => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [calculatorValue, setCalculatorValue] = useState('0');
   const [scratchPadContent, setScratchPadContent] = useState('');
+  const [drawingMode, setDrawingMode] = useState(false);
+  const canvasRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
   
   const timerRef = useRef(null);
 
