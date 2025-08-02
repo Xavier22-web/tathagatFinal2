@@ -14,6 +14,7 @@ const Login = ({ onClose, setUser }) => {
   const [otpSuccess, setOtpSuccess] = useState(false);
   const [otpError, setOtpError] = useState("");
   const [toastMessage, setToastMessage] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const navigate = useNavigate();
 
