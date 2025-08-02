@@ -14,7 +14,10 @@ const verifyToken = (req) => {
 // ✅ 1. Normal user middleware
 const authMiddleware = (req, res, next) => {
   try {
+    console.log('🔍 Auth Middleware called for:', req.method, req.path);
+    console.log('Authorization header:', req.headers.authorization);
     const decoded = verifyToken(req); // { id, role }
+    console.log('✅ Token verified, user:', decoded);
     req.user = decoded;
     next();
   } catch (error) {
