@@ -600,7 +600,25 @@ if (process.env.NODE_ENV === "production") {
 
 // ======================= Server Start ==========================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
+
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`🌐 Server accessible at http://0.0.0.0:${PORT}`);
+    console.log(`✅ Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`✅ JWT Secret loaded: ${!!process.env.JWT_SECRET}`);
+});
+
+server.on('error', (error) => {
+    console.error('❌ Server startup error:', error);
+    if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} is already in use`);
+    }
+});
+
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('SIGTERM signal received: closing HTTP server');
+    server.close(() => {
+        console.log('HTTP server closed');
+    });
 });
