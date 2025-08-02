@@ -224,6 +224,49 @@ const MockTestAttempt = () => {
     }
   };
 
+  const calculateSectionResult = (sectionIndex) => {
+    const section = testData.sections[sectionIndex];
+    const sectionQuestions = section.questions || [];
+
+    let answered = 0;
+    let correct = 0;
+    let incorrect = 0;
+    let markedCount = 0;
+    let visited = 0;
+
+    sectionQuestions.forEach((questionId, index) => {
+      const response = responses[questionId];
+      const isMarked = markedForReview.has(index);
+      const isVisited = visitedQuestions.has(index);
+
+      if (isVisited) visited++;
+      if (isMarked) markedCount++;
+
+      if (response) {
+        answered++;
+        // For now, we'll assume correctness check happens on backend
+        // This is a simplified calculation
+      }
+    });
+
+    const notAnswered = sectionQuestions.length - answered;
+    const notVisited = sectionQuestions.length - visited;
+
+    return {
+      sectionName: section.name,
+      totalQuestions: sectionQuestions.length,
+      answered,
+      notAnswered,
+      markedForReview: markedCount,
+      visited,
+      notVisited,
+      correct: 0, // Will be calculated on backend
+      incorrect: 0, // Will be calculated on backend
+      score: answered * 3 - incorrect * 1, // Simplified calculation
+      maxScore: sectionQuestions.length * 3
+    };
+  };
+
   const handleNextSection = () => {
     if (currentSection < testData?.sections?.length - 1) {
       setCurrentSection(prev => prev + 1);
