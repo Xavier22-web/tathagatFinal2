@@ -269,7 +269,19 @@ const CoursePurchase = () => {
       rzp.open();
     } catch (err) {
       console.error("❌ Error in handlePayment:", err);
-      alert("❌ Something went wrong. Please try again.");
+      console.error("❌ Course data at error:", course);
+      console.error("❌ Error stack:", err.stack);
+
+      // Provide specific error messages based on error type
+      if (err.message && err.message.includes('Cannot read properties of null')) {
+        alert("❌ Course data is missing. Please select the course again from the courses page.");
+        navigate('/student/dashboard');
+      } else if (err.message && err.message.includes('_id')) {
+        alert("❌ Invalid course information. Please try selecting the course again.");
+        navigate('/student/dashboard');
+      } else {
+        alert("❌ Something went wrong during payment setup. Please try again.");
+      }
     }
   };
 
