@@ -100,9 +100,16 @@ const CoursePurchase = () => {
         `http://localhost:5000/api/courses/student/published-courses/${course._id}`
       );
 
-      const courseData = await courseRes.json();
+      let courseData;
+      try {
+        courseData = await courseRes.json();
+      } catch (parseError) {
+        console.error("Failed to parse course details response:", parseError);
+        alert("❌ Failed to load course details");
+        return;
+      }
 
-      if (!courseData.course) {
+      if (!courseRes.ok || !courseData.course) {
         alert("❌ Course not found");
         return;
       }
