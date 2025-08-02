@@ -150,46 +150,51 @@ const CoursePurchase = () => {
         name: "Tathagat Academy",
         description: courseData.course.name || "Course Purchase",
         order_id: orderData.order.id,
-        handler: function (response) {
-          // ✅ 4️⃣ Verify and unlock
-          fetch("http://localhost:5000/api/user/payment/verify-and-unlock", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${authToken}`,
-            },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              courseId: course._id,
-            }),
-          })
-            .then(async (res) => {
-              let data;
-              try {
-                data = await res.json();
-              } catch (parseError) {
-                console.error("Failed to parse verification response:", parseError);
-                data = {
-                  success: false,
-                  message: `Server error: ${res.status} ${res.statusText}`
-                };
-              }
+        handler: async function (response) {
+          try {
+            console.log("🔍 Starting payment verification...");
 
-              console.log("✅ Verify API response:", data);
-              if (res.ok && data.success) {
-                alert("✅ Payment verified & course unlocked!");
-                navigate("/student/dashboard");
-              } else {
-                const errorMsg = data.message || `Verification failed (${res.status})`;
-                alert("❌ Payment verification failed: " + errorMsg);
-              }
-            })
-            .catch((err) => {
-              console.error("❌ Verification error:", err);
-              alert("❌ Something went wrong. Please contact support.");
+            // ✅ 4️⃣ Verify and unlock
+            const verifyResponse = await fetch("http://localhost:5000/api/user/payment/verify-and-unlock", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${authToken}`,
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                courseId: course._id,
+              }),
             });
+
+            console.log("Verification response status:", verifyResponse.status);
+
+            let data;
+            try {
+              data = await verifyResponse.json();
+              console.log("✅ Verify API response:", data);
+            } catch (parseError) {
+              console.error("Failed to parse verification response:", parseError);
+              data = {
+                success: false,
+                message: `Server returned invalid response (${verifyResponse.status}): ${verifyResponse.statusText}`
+              };
+            }
+
+            if (verifyResponse.ok && data.success) {
+              alert("✅ Payment verified & course unlocked!");
+              navigate("/student/dashboard");
+            } else {
+              const errorMsg = data.message || `Verification failed (${verifyResponse.status})`;
+              console.error("❌ Verification failed:", errorMsg);
+              alert("❌ Payment verification failed: " + errorMsg);
+            }
+          } catch (err) {
+            console.error("❌ Verification error:", err);
+            alert("❌ Something went wrong during verification. Please contact support.");
+          }
         },
         prefill: {
           name: "Test User",
