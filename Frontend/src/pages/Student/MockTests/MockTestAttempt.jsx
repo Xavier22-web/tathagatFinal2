@@ -268,6 +268,18 @@ const MockTestAttempt = () => {
   };
 
   const handleNextSection = () => {
+    // Calculate current section result
+    const sectionResult = calculateSectionResult(currentSection);
+    setCurrentSectionResult(sectionResult);
+    setCompletedSections(prev => [...prev, sectionResult]);
+
+    // Show section result modal
+    setShowSectionResult(true);
+  };
+
+  const proceedToNextSection = () => {
+    setShowSectionResult(false);
+
     if (currentSection < testData?.sections?.length - 1) {
       setCurrentSection(prev => prev + 1);
       setCurrentQuestion(0);
