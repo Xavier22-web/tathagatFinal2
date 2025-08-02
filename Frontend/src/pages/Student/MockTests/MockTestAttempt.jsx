@@ -595,9 +595,13 @@ const MockTestAttempt = () => {
               <button onClick={() => setShowInstructions(false)}>×</button>
             </div>
             <div className="instructions-content">
-              {testData.instructions?.map((instruction, index) => (
-                <p key={index}>{instruction}</p>
-              ))}
+              {Array.isArray(testData.instructions) ? (
+                testData.instructions.map((instruction, index) => (
+                  <p key={index}>{instruction}</p>
+                ))
+              ) : (
+                <p>{testData.instructions || 'No instructions available'}</p>
+              )}
             </div>
           </div>
         </div>
