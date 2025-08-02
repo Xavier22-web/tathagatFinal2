@@ -78,7 +78,13 @@ const CoursePurchase = () => {
         }
       );
 
-      const checkData = await checkRes.json();
+      let checkData;
+      try {
+        checkData = await checkRes.json();
+      } catch (parseError) {
+        console.error("Failed to parse enrollment check response:", parseError);
+        checkData = { courses: [] };
+      }
      const alreadyUnlocked =
   Array.isArray(checkData?.courses) &&
   checkData.courses.some((c) => c._id === course._id);
