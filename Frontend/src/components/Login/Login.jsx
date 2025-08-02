@@ -23,6 +23,10 @@ const Login = ({ onClose, setUser }) => {
   // Demo login function
   const handleDemoLogin = async () => {
     try {
+      // Clear previous errors/messages
+      setOtpError("");
+      setToastMessage("");
+
       console.log("🔍 Starting demo login...");
       const response = await axios.post("/api/dev/login");
 
@@ -31,23 +35,30 @@ const Login = ({ onClose, setUser }) => {
         localStorage.setItem("authToken", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
 
-        // Set user context
-        setUser(response.data.user);
+        // Set user context if setUser function exists
+        if (setUser && typeof setUser === 'function') {
+          setUser(response.data.user);
+        }
 
         console.log("✅ Demo login successful");
         setToastMessage("Demo login successful! Welcome " + response.data.user.name);
 
-        // Close login modal and redirect (only if onClose function exists)
-        if (onClose && typeof onClose === 'function') {
-          onClose();
-        }
-        handlePostLoginRedirect("/student/dashboard");
+        // Wait a moment to show success message, then redirect
+        setTimeout(() => {
+          // Close login modal and redirect (only if onClose function exists)
+          if (onClose && typeof onClose === 'function') {
+            onClose();
+          }
+          handlePostLoginRedirect("/student/dashboard");
+        }, 1000);
+
       } else {
         setOtpError("Demo login failed. Please try again.");
       }
     } catch (error) {
       console.error("❌ Demo login error:", error);
-      setOtpError("Demo login failed: " + (error.response?.data?.message || error.message));
+      const errorMessage = error.response?.data?.message || error.message || "Unknown error occurred";
+      setOtpError("Demo login failed: " + errorMessage);
     }
   };
 
