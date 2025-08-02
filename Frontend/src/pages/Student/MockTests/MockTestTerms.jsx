@@ -139,27 +139,39 @@ const MockTestTerms = () => {
 
       console.log('Response status:', response.status);
 
+      // Parse response only once
       let data;
+      let parseSuccess = false;
+
       try {
         data = await response.json();
+        parseSuccess = true;
         console.log('Response data:', data);
       } catch (parseError) {
         console.error('Failed to parse response:', parseError);
-        data = { success: false, message: `Server error: ${response.status}` };
+        parseSuccess = false;
+        data = {
+          success: false,
+          message: `Server returned invalid response (${response.status}): ${response.statusText}`
+        };
       }
 
       if (!response.ok) {
-        const errorMsg = data.message || `HTTP error! status: ${response.status}`;
+        const errorMsg = parseSuccess && data.message ? data.message : `HTTP error! status: ${response.status}`;
         console.error('❌ Start test failed:', errorMsg);
 
         if (response.status === 401) {
           alert('Authentication failed. Please try logging in again.');
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
-        } else if (response.status === 400 && data.message?.includes('Invalid user ID')) {
-          alert('Invalid user authentication. Please try development login.');
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
+        } else if (response.status === 400) {
+          if (parseSuccess && data.message?.includes('Invalid user ID')) {
+            alert('Invalid user authentication. Please try development login.');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+          } else {
+            alert('Request error: ' + errorMsg);
+          }
         } else {
           alert('Error: ' + errorMsg);
         }
