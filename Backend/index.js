@@ -90,6 +90,28 @@ app.get("/api/test", (req, res) => {
     });
 });
 
+// ======================= Development Test User ========================================
+app.post("/api/dev/login", (req, res) => {
+    const jwt = require('jsonwebtoken');
+
+    // Create a development user token
+    const devUser = {
+        id: 'dev_user_id',
+        email: 'dev@test.com',
+        name: 'Development User',
+        role: 'student'
+    };
+
+    const token = jwt.sign(devUser, process.env.JWT_SECRET || 'test_secret_key_for_development', { expiresIn: '24h' });
+
+    res.status(200).json({
+        success: true,
+        message: "Development user logged in",
+        token: token,
+        user: devUser
+    });
+});
+
 // ======================= Add Sample Data on Startup ========================================
 const addSampleStudyMaterials = async () => {
     try {
