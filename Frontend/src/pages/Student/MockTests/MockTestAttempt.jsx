@@ -119,7 +119,12 @@ const MockTestAttempt = () => {
       }
 
       const data = await response.json();
+      console.log('Test data received:', data);
       if (data.success) {
+        console.log('Test sections:', data.test.sections);
+        data.test.sections.forEach((section, index) => {
+          console.log(`Section ${index + 1} (${section.name}):`, section.questions?.length, 'questions');
+        });
         setTestData(data.test);
         setTimeRemaining(data.test.duration * 60); // Convert to seconds
         setSectionTimeRemaining(3600); // 60 minutes per section
