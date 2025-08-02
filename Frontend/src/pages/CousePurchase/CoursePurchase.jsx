@@ -271,6 +271,29 @@ const CoursePurchase = () => {
     setActiveIndex(index === activeIndex ? null : index);
   };
 
+  // Show loading or error state if course data is missing
+  if (!course || !course._id) {
+    return (
+      <div className="course-page container">
+        <div className="row">
+          <div className="col-12 text-center">
+            <div style={{ padding: '50px', textAlign: 'center' }}>
+              <h3>⚠️ Course Information Missing</h3>
+              <p>Please select a course from the courses page to proceed with purchase.</p>
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate('/student/dashboard')}
+                style={{ marginTop: '20px' }}
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="course-page container">
       <div className="row">
