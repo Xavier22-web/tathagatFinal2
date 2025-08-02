@@ -194,3 +194,36 @@ export const devLogin = async () => {
     throw error;
   }
 };
+
+// Safe fetch wrapper that prevents body stream errors
+export const safeFetch = async (url, options = {}) => {
+  try {
+    const response = await fetch(url, options);
+
+    let data;
+    let parseSuccess = false;
+
+    try {
+      data = await response.json();
+      parseSuccess = true;
+    } catch (parseError) {
+      console.warn('Failed to parse response as JSON:', parseError);
+      data = {
+        success: false,
+        message: `Server returned ${response.status}: ${response.statusText}`
+      };
+    }
+
+    return {
+      response,
+      data,
+      parseSuccess,
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText
+    };
+  } catch (error) {
+    console.error('Fetch error:', error);
+    throw error;
+  }
+};
