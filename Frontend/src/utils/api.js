@@ -129,3 +129,49 @@ export const fetchMyCourses = async () => {
     throw error;
   }
 };
+
+// Mock Test API functions
+export const startMockTest = async (testId) => {
+  try {
+    const authToken = localStorage.getItem('authToken');
+    console.log('Starting mock test with token:', authToken ? 'Present' : 'Missing');
+
+    if (!authToken) {
+      throw new Error('Authentication required. Please log in to start the test.');
+    }
+
+    const data = await fetchWithErrorHandling(`${API_BASE_URL}/api/mock-tests/test/${testId}/start`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return data;
+  } catch (error) {
+    console.error('Error starting mock test:', error);
+    throw error;
+  }
+};
+
+export const devLogin = async () => {
+  try {
+    const data = await fetchWithErrorHandling(`${API_BASE_URL}/api/dev/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (data.success && data.token) {
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      console.log('Development user logged in successfully');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error with dev login:', error);
+    throw error;
+  }
+};
