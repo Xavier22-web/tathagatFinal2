@@ -682,6 +682,32 @@
   align-items: center;
 }
 
+.scratchpad-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-btn {
+  padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.mode-btn.active {
+  background: rgba(255,255,255,0.9);
+  color: #2c5aa0;
+  border-color: rgba(255,255,255,0.9);
+}
+
+.mode-btn:hover:not(.active) {
+  background: rgba(255,255,255,0.2);
+}
+
 .scratchpad-header h4 {
   margin: 0;
   font-size: 16px;
