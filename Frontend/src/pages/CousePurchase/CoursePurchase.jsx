@@ -144,14 +144,25 @@ const CoursePurchase = () => {
               courseId: course._id,
             }),
           })
-            .then((res) => res.json())
-            .then((data) => {
+            .then(async (res) => {
+              let data;
+              try {
+                data = await res.json();
+              } catch (parseError) {
+                console.error("Failed to parse verification response:", parseError);
+                data = {
+                  success: false,
+                  message: `Server error: ${res.status} ${res.statusText}`
+                };
+              }
+
               console.log("✅ Verify API response:", data);
-              if (data.success) {
+              if (res.ok && data.success) {
                 alert("✅ Payment verified & course unlocked!");
                 navigate("/student/dashboard");
               } else {
-                alert("❌ Payment verification failed: " + data.message);
+                const errorMsg = data.message || `Verification failed (${res.status})`;
+                alert("❌ Payment verification failed: " + errorMsg);
               }
             })
             .catch((err) => {
