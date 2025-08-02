@@ -737,6 +737,15 @@
   outline: none;
 }
 
+.scratchpad-canvas {
+  flex: 1;
+  border: none;
+  background: white;
+  cursor: crosshair;
+  display: block;
+  margin: 0 auto;
+}
+
 .scratchpad-actions {
   padding: 15px;
   border-top: 1px solid #ddd;
