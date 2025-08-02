@@ -60,12 +60,31 @@ const CoursePurchase = () => {
   const location = useLocation();
   const course = location.state;
 
+  // Validate course data on component mount
+  useEffect(() => {
+    if (!course || !course._id) {
+      console.error("❌ No course data found in location state");
+      alert("❌ Course information is missing. Please select a course from the courses page.");
+      navigate('/student/dashboard');
+    }
+  }, [course, navigate]);
+
   const handlePayment = async () => {
+    // Validate course data before proceeding
+    if (!course || !course._id) {
+      console.error("❌ Course data is null or missing _id:", course);
+      alert("❌ Course information is missing. Please select a course again.");
+      navigate('/student/dashboard');
+      return;
+    }
+
     const authToken = localStorage.getItem("authToken");
     if (!authToken) {
       alert("❌ Please login again!");
       return;
     }
+
+    console.log("🔍 Starting payment for course:", course._id);
 
     try {
       // ✅ 1️⃣ Check if already unlocked
