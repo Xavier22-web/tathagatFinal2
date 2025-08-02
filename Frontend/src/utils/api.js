@@ -33,22 +33,36 @@ export const fetchWithErrorHandling = async (url, options = {}) => {
 
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // Try to parse JSON first, then handle errors
+    let responseData;
+    try {
+      responseData = await response.json();
+    } catch (parseError) {
+      // If JSON parsing fails, create a basic error response
+      responseData = {
+        success: false,
+        message: `HTTP ${response.status}: ${response.statusText}`
+      };
     }
 
-    return await response.json();
+    if (!response.ok) {
+      // Now we can safely access the response data without re-reading the stream
+      const errorMessage = responseData.message || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    return responseData;
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     if (error.name === 'AbortError') {
       throw new Error('Request timeout - backend server may be unavailable');
     }
-    
+
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error('Cannot connect to backend server. Please check if the server is running.');
     }
-    
+
     throw error;
   }
 };
@@ -126,6 +140,90 @@ export const fetchMyCourses = async () => {
     return data;
   } catch (error) {
     console.error('Error fetching my courses:', error);
+    throw error;
+  }
+};
+
+// Mock Test API functions
+export const startMockTest = async (testId) => {
+  try {
+    const authToken = localStorage.getItem('authToken');
+    console.log('🚀 Starting mock test with token:', authToken ? 'Present' : 'Missing');
+
+    if (!authToken) {
+      throw new Error('Authentication required. Please log in to start the test.');
+    }
+
+    console.log('Making API call to:', `${API_BASE_URL}/api/mock-tests/test/${testId}/start`);
+
+    const data = await fetchWithErrorHandling(`${API_BASE_URL}/api/mock-tests/test/${testId}/start`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({})
+    });
+
+    console.log('✅ Mock test started successfully:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ Error starting mock test:', error);
+    throw error;
+  }
+};
+
+export const devLogin = async () => {
+  try {
+    const data = await fetchWithErrorHandling(`${API_BASE_URL}/api/dev/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (data.success && data.token) {
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      console.log('Development user logged in successfully');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error with dev login:', error);
+    throw error;
+  }
+};
+
+// Safe fetch wrapper that prevents body stream errors
+export const safeFetch = async (url, options = {}) => {
+  try {
+    const response = await fetch(url, options);
+
+    let data;
+    let parseSuccess = false;
+
+    try {
+      data = await response.json();
+      parseSuccess = true;
+    } catch (parseError) {
+      console.warn('Failed to parse response as JSON:', parseError);
+      data = {
+        success: false,
+        message: `Server returned ${response.status}: ${response.statusText}`
+      };
+    }
+
+    return {
+      response,
+      data,
+      parseSuccess,
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText
+    };
+  } catch (error) {
+    console.error('Fetch error:', error);
     throw error;
   }
 };

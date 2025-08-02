@@ -359,9 +359,16 @@ const loadMyCourses = async () => {
         // Refresh materials to update download count
         loadStudyMaterials();
       } else {
-        const errorData = await response.json();
-        alert(errorData.message || 'Failed to download material');
-        console.error('❌ Download failed:', errorData);
+        let errorMessage = 'Failed to download material';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (parseError) {
+          // If JSON parsing fails, use default message
+          console.warn('Could not parse error response:', parseError);
+        }
+        alert(errorMessage);
+        console.error('❌ Download failed:', errorMessage);
       }
     } catch (error) {
       console.error('❌ Error downloading material:', error);

@@ -23,8 +23,13 @@ export const fetchStudyMaterials = async (filters = {}) => {
       }
     });
 
-    const data = await response.json();
-    
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      data = { success: false, message: `HTTP ${response.status}: ${response.statusText}` };
+    }
+
     if (!response.ok) {
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }
@@ -40,7 +45,7 @@ export const fetchStudyMaterials = async (filters = {}) => {
 export const downloadStudyMaterial = async (materialId) => {
   try {
     const token = localStorage.getItem('authToken');
-    
+
     const response = await fetch(`${API_BASE_URL}/api/study-materials/download/${materialId}`, {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -48,8 +53,15 @@ export const downloadStudyMaterial = async (materialId) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (parseError) {
+        // If JSON parsing fails, use default message
+        console.warn('Could not parse error response:', parseError);
+      }
+      throw new Error(errorMessage);
     }
 
     return response;
@@ -72,8 +84,13 @@ export const uploadStudyMaterial = async (formData) => {
       body: formData
     });
 
-    const data = await response.json();
-    
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      data = { success: false, message: `HTTP ${response.status}: ${response.statusText}` };
+    }
+
     if (!response.ok) {
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }
@@ -120,8 +137,13 @@ export const fetchAllStudyMaterials = async (filters = {}, pagination = {}) => {
       }
     });
 
-    const data = await response.json();
-    
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      data = { success: false, message: `HTTP ${response.status}: ${response.statusText}` };
+    }
+
     if (!response.ok) {
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }
@@ -146,8 +168,13 @@ export const deleteStudyMaterial = async (materialId) => {
       }
     });
 
-    const data = await response.json();
-    
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      data = { success: false, message: `HTTP ${response.status}: ${response.statusText}` };
+    }
+
     if (!response.ok) {
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }
@@ -173,8 +200,13 @@ export const updateStudyMaterial = async (materialId, updateData) => {
       body: JSON.stringify(updateData)
     });
 
-    const data = await response.json();
-    
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      data = { success: false, message: `HTTP ${response.status}: ${response.statusText}` };
+    }
+
     if (!response.ok) {
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }

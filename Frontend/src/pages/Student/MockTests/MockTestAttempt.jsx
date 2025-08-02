@@ -23,6 +23,16 @@ const MockTestAttempt = () => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [calculatorValue, setCalculatorValue] = useState('0');
   const [scratchPadContent, setScratchPadContent] = useState('');
+  const [drawingMode, setDrawingMode] = useState(false);
+  const canvasRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  // Section result states
+  const [showSectionResult, setShowSectionResult] = useState(false);
+  const [currentSectionResult, setCurrentSectionResult] = useState(null);
+  const [completedSections, setCompletedSections] = useState([]);
+  const [showFinalResult, setShowFinalResult] = useState(false);
+  const [finalResult, setFinalResult] = useState(null);
   
   const timerRef = useRef(null);
 
@@ -161,7 +171,7 @@ const MockTestAttempt = () => {
     try {
       const authToken = localStorage.getItem('authToken');
       await fetch(`/api/mock-tests/attempt/${attemptId}/response`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
@@ -214,17 +224,90 @@ const MockTestAttempt = () => {
     }
   };
 
+  const calculateSectionResult = (sectionIndex) => {
+    const section = testData.sections[sectionIndex];
+    const sectionQuestions = section.questions || [];
+
+    let answered = 0;
+    let markedCount = 0;
+    let visited = visitedQuestions.size; // Current section visited questions
+
+    // For current section, use current visitedQuestions state
+    // For other sections, we'd need to track separately (simplified for now)
+
+    sectionQuestions.forEach((questionId, localIndex) => {
+      const response = responses[questionId];
+      const globalQuestionIndex = localIndex; // Simplified - using local index
+
+      if (markedForReview.has(globalQuestionIndex)) {
+        markedCount++;
+      }
+
+      if (response && response.trim() !== '') {
+        answered++;
+      }
+    });
+
+    const notAnswered = sectionQuestions.length - answered;
+    const notVisited = Math.max(0, sectionQuestions.length - visited);
+
+    return {
+      sectionName: section.name,
+      totalQuestions: sectionQuestions.length,
+      answered,
+      notAnswered,
+      markedForReview: markedCount,
+      visited: Math.min(visited, sectionQuestions.length),
+      notVisited,
+      correct: 0, // Will be calculated on backend
+      incorrect: 0, // Will be calculated on backend
+      score: answered * 3, // Simplified calculation (no negative marking for now)
+      maxScore: sectionQuestions.length * 3
+    };
+  };
+
   const handleNextSection = () => {
+    // Calculate current section result
+    const sectionResult = calculateSectionResult(currentSection);
+    setCurrentSectionResult(sectionResult);
+    setCompletedSections(prev => [...prev, sectionResult]);
+
+    // Show section result modal
+    setShowSectionResult(true);
+  };
+
+  const proceedToNextSection = () => {
+    setShowSectionResult(false);
+    setCurrentSectionResult(null);
+
     if (currentSection < testData?.sections?.length - 1) {
       setCurrentSection(prev => prev + 1);
       setCurrentQuestion(0);
       setVisitedQuestions(new Set([0]));
       setSectionTimeRemaining(3600);
+    } else {
+      // Last section completed, proceed to final submission
+      handleSubmitTest();
     }
   };
 
   const handleSubmitTest = async () => {
     try {
+      // Calculate final section result if not already calculated
+      if (currentSectionResult === null || currentSectionResult.sectionName !== testData.sections[currentSection].name) {
+        const sectionResult = calculateSectionResult(currentSection);
+        setCompletedSections(prev => {
+          const updated = [...prev];
+          const existingIndex = updated.findIndex(s => s.sectionName === sectionResult.sectionName);
+          if (existingIndex >= 0) {
+            updated[existingIndex] = sectionResult;
+          } else {
+            updated.push(sectionResult);
+          }
+          return updated;
+        });
+      }
+
       const authToken = localStorage.getItem('authToken');
       const response = await fetch(`/api/mock-tests/attempt/${attemptId}/submit`, {
         method: 'POST',
@@ -236,8 +319,26 @@ const MockTestAttempt = () => {
 
       const data = await response.json();
       if (data.success) {
-        alert(`Test submitted successfully! Your score: ${data.score}`);
-        navigate('/student/mock-tests');
+        // Calculate combined results
+        const allSections = [...completedSections];
+        if (!allSections.find(s => s.sectionName === testData.sections[currentSection].name)) {
+          allSections.push(calculateSectionResult(currentSection));
+        }
+
+        const combinedResult = {
+          sections: allSections,
+          totalScore: allSections.reduce((sum, section) => sum + section.score, 0),
+          maxTotalScore: allSections.reduce((sum, section) => sum + section.maxScore, 0),
+          totalAnswered: allSections.reduce((sum, section) => sum + section.answered, 0),
+          totalQuestions: allSections.reduce((sum, section) => sum + section.totalQuestions, 0),
+          percentage: 0,
+          backendScore: data.score
+        };
+
+        combinedResult.percentage = (combinedResult.totalScore / combinedResult.maxTotalScore) * 100;
+
+        setFinalResult(combinedResult);
+        setShowFinalResult(true);
       }
     } catch (error) {
       console.error('Error submitting test:', error);
@@ -245,7 +346,11 @@ const MockTestAttempt = () => {
   };
 
   const getCurrentQuestion = () => {
-    return testData?.sections[currentSection]?.questions[currentQuestion];
+    if (!testData?.sections?.[currentSection]?.questions) {
+      console.warn('No questions found for current section:', currentSection);
+      return null;
+    }
+    return testData.sections[currentSection].questions[currentQuestion];
   };
 
   const getQuestionStatus = (questionIndex) => {
@@ -260,6 +365,40 @@ const MockTestAttempt = () => {
     if (isMarked) return 'marked';
     if (isVisited) return 'visited';
     return 'not-visited';
+  };
+
+  // Drawing functions
+  const startDrawing = (e) => {
+    if (!drawingMode) return;
+    setIsDrawing(true);
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const ctx = canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing || !drawingMode) return;
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000';
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    if (!drawingMode) return;
+    setIsDrawing(false);
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
   // Calculator functions
@@ -363,9 +502,13 @@ const MockTestAttempt = () => {
 
           <div className="question-content">
             <div className="question-text">
-              {currentQuestionData?.questionText?.split('\n').map((line, index) => (
-                <p key={index}>{line}</p>
-              ))}
+              {currentQuestionData?.questionText ? (
+                currentQuestionData.questionText.split('\n').map((line, index) => (
+                  <p key={index}>{line}</p>
+                ))
+              ) : (
+                <p>Loading question...</p>
+              )}
             </div>
 
             {currentQuestionData?.images?.map((image, index) => (
@@ -373,29 +516,35 @@ const MockTestAttempt = () => {
             ))}
 
             <div className="question-options">
-              {currentQuestionData?.options?.map((option, index) => {
-                const optionLabel = String.fromCharCode(65 + index); // A, B, C, D
-                const questionId = currentQuestionData._id;
-                const isSelected = responses[questionId] === option;
-                
-                return (
-                  <label key={index} className={`option-label ${isSelected ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name={`question-${questionId}`}
-                      value={option}
-                      checked={isSelected}
-                      onChange={() => handleAnswerSelect(option)}
-                    />
-                    <span className="option-indicator">{optionLabel}</span>
-                  {option.optionImage && (
-  <img src={option.optionImage} alt="option" className="option-image" />
-)}
+              {currentQuestionData?.options && currentQuestionData.options.length > 0 ? (
+                currentQuestionData.options.map((option, index) => {
+                  const optionLabel = String.fromCharCode(65 + index); // A, B, C, D
+                  const questionId = currentQuestionData._id;
+                  const optionText = typeof option === 'object' ? option.optionText : option;
+                  const isSelected = responses[questionId] === optionText;
 
-
-                  </label>
-                );
-              })}
+                  return (
+                    <label key={index} className={`option-label ${isSelected ? 'selected' : ''}`}>
+                      <input
+                        type="radio"
+                        name={`question-${questionId}`}
+                        value={optionText}
+                        checked={isSelected}
+                        onChange={() => handleAnswerSelect(optionText)}
+                      />
+                      <span className="option-indicator">{optionLabel}</span>
+                      <span className="option-text">
+                        {optionText}
+                      </span>
+                      {typeof option === 'object' && option.optionImage && (
+                        <img src={option.optionImage} alt="option" className="option-image" />
+                      )}
+                    </label>
+                  );
+                })
+              ) : (
+                <p>Loading options...</p>
+              )}
             </div>
           </div>
 
@@ -482,15 +631,19 @@ const MockTestAttempt = () => {
           <div className="question-palette">
             <h4>Choose a Question</h4>
             <div className="palette-grid">
-              {testData.sections[currentSection]?.questions?.map((_, index) => (
-                <button
-                  key={index}
-                  className={`palette-btn ${getQuestionStatus(index)} ${currentQuestion === index ? 'current' : ''}`}
-                  onClick={() => handleQuestionSelect(index)}
-                >
-                  {index + 1}
-                </button>
-              ))}
+              {testData.sections[currentSection]?.questions?.length > 0 ? (
+                testData.sections[currentSection].questions.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`palette-btn ${getQuestionStatus(index)} ${currentQuestion === index ? 'current' : ''}`}
+                    onClick={() => handleQuestionSelect(index)}
+                  >
+                    {index + 1}
+                  </button>
+                ))
+              ) : (
+                <p>No questions available for this section</p>
+              )}
             </div>
           </div>
 
@@ -571,16 +724,49 @@ const MockTestAttempt = () => {
           <div className="scratchpad-modal">
             <div className="scratchpad-header">
               <h4>Scratch Pad</h4>
+              <div className="scratchpad-controls">
+                <button
+                  className={`mode-btn ${!drawingMode ? 'active' : ''}`}
+                  onClick={() => setDrawingMode(false)}
+                >
+                  📝 Text
+                </button>
+                <button
+                  className={`mode-btn ${drawingMode ? 'active' : ''}`}
+                  onClick={() => setDrawingMode(true)}
+                >
+                  ✏️ Draw
+                </button>
+              </div>
               <button onClick={() => setShowScratchPad(false)}>×</button>
             </div>
-            <textarea
-              className="scratchpad-textarea"
-              value={scratchPadContent}
-              onChange={(e) => setScratchPadContent(e.target.value)}
-              placeholder="Use this space for your rough work..."
-            />
+
+            {drawingMode ? (
+              <canvas
+                ref={canvasRef}
+                className="scratchpad-canvas"
+                width={460}
+                height={300}
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+              />
+            ) : (
+              <textarea
+                className="scratchpad-textarea"
+                value={scratchPadContent}
+                onChange={(e) => setScratchPadContent(e.target.value)}
+                placeholder="Use this space for your rough work..."
+              />
+            )}
+
             <div className="scratchpad-actions">
-              <button onClick={() => setScratchPadContent('')}>Clear All</button>
+              {drawingMode ? (
+                <button onClick={clearCanvas}>Clear Drawing</button>
+              ) : (
+                <button onClick={() => setScratchPadContent('')}>Clear Text</button>
+              )}
             </div>
           </div>
         </div>
@@ -595,9 +781,130 @@ const MockTestAttempt = () => {
               <button onClick={() => setShowInstructions(false)}>×</button>
             </div>
             <div className="instructions-content">
-              {testData.instructions?.map((instruction, index) => (
-                <p key={index}>{instruction}</p>
-              ))}
+              {Array.isArray(testData.instructions) && testData.instructions.length > 0 ? (
+                testData.instructions.map((instruction, index) => (
+                  <p key={index}>
+                    {typeof instruction === 'object' ? JSON.stringify(instruction) : String(instruction)}
+                  </p>
+                ))
+              ) : (
+                <p>No instructions available</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Section Result Modal */}
+      {showSectionResult && currentSectionResult && (
+        <div className="modal-overlay">
+          <div className="section-result-modal">
+            <div className="section-result-header">
+              <h3>Section Result - {currentSectionResult.sectionName}</h3>
+            </div>
+            <div className="section-result-content">
+              <div className="result-summary">
+                <div className="result-stats">
+                  <div className="stat-item">
+                    <span className="stat-label">Total Questions:</span>
+                    <span className="stat-value">{currentSectionResult.totalQuestions}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Answered:</span>
+                    <span className="stat-value answered">{currentSectionResult.answered}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Not Answered:</span>
+                    <span className="stat-value not-answered">{currentSectionResult.notAnswered}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Marked for Review:</span>
+                    <span className="stat-value marked">{currentSectionResult.markedForReview}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Not Visited:</span>
+                    <span className="stat-value not-visited">{currentSectionResult.notVisited}</span>
+                  </div>
+                </div>
+
+                <div className="score-summary">
+                  <h4>Section Performance</h4>
+                  <div className="score-item">
+                    <span>Attempted: {currentSectionResult.answered} questions</span>
+                  </div>
+                  <div className="score-item">
+                    <span>Percentage: {((currentSectionResult.answered / currentSectionResult.totalQuestions) * 100).toFixed(1)}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="section-result-actions">
+              {currentSection < testData?.sections?.length - 1 ? (
+                <button className="result-btn primary" onClick={proceedToNextSection}>
+                  Continue to Next Section →
+                </button>
+              ) : (
+                <button className="result-btn primary" onClick={proceedToNextSection}>
+                  Continue to Submit
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Final Result Modal */}
+      {showFinalResult && finalResult && (
+        <div className="modal-overlay">
+          <div className="final-result-modal">
+            <div className="final-result-header">
+              <h3>Test Complete - Final Results</h3>
+            </div>
+            <div className="final-result-content">
+              <div className="overall-summary">
+                <div className="overall-stats">
+                  <div className="big-stat">
+                    <span className="big-stat-label">Overall Score</span>
+                    <span className="big-stat-value">{finalResult.totalAnswered}/{finalResult.totalQuestions}</span>
+                    <span className="big-stat-percentage">{finalResult.percentage.toFixed(1)}%</span>
+                  </div>
+                </div>
+
+                <div className="section-wise-results">
+                  <h4>Section-wise Performance</h4>
+                  <table className="results-table">
+                    <thead>
+                      <tr>
+                        <th>Section</th>
+                        <th>Questions</th>
+                        <th>Answered</th>
+                        <th>Not Answered</th>
+                        <th>Marked</th>
+                        <th>Not Visited</th>
+                        <th>%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {finalResult.sections.map((section, index) => (
+                        <tr key={index}>
+                          <td className="section-name">{section.sectionName}</td>
+                          <td>{section.totalQuestions}</td>
+                          <td className="answered">{section.answered}</td>
+                          <td className="not-answered">{section.notAnswered}</td>
+                          <td className="marked">{section.markedForReview}</td>
+                          <td className="not-visited">{section.notVisited}</td>
+                          <td>{((section.answered / section.totalQuestions) * 100).toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div className="final-result-actions">
+              <button className="result-btn primary" onClick={() => navigate('/student/mock-tests')}>
+                Back to Mock Tests
+              </button>
             </div>
           </div>
         </div>

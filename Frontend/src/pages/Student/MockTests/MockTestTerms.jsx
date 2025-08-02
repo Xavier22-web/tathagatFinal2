@@ -62,6 +62,80 @@ const MockTestTerms = () => {
 
   const [isStarting, setIsStarting] = useState(false);
 
+  const handleDevLogin = async () => {
+    try {
+      console.log('🔍 Attempting development login...');
+      const response = await fetch('/api/dev/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Response status:', response.status);
+
+      let data;
+      let parseSuccess = false;
+
+      try {
+        data = await response.json();
+        parseSuccess = true;
+        console.log('Response data:', data);
+      } catch (parseError) {
+        console.error('Failed to parse dev login response:', parseError);
+        parseSuccess = false;
+        data = { success: false, message: 'Invalid response from server' };
+      }
+
+      if (response.ok && parseSuccess && data.success && data.token) {
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        console.log('✅ Development user logged in successfully');
+        console.log('Token stored:', data.token.substring(0, 20) + '...');
+        alert('Development user logged in successfully! You can now start the test.');
+        return true;
+      } else {
+        const errorMessage = parseSuccess && data.message ? data.message : 'Development login failed';
+        console.error('❌ Dev login failed:', errorMessage);
+        alert('Development login failed: ' + errorMessage);
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Dev login error:', error);
+      alert('Development login error: ' + error.message);
+      return false;
+    }
+  };
+
+  const handleTestToken = async () => {
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        alert('No token found. Please login first.');
+        return;
+      }
+
+      const response = await fetch('/api/dev/verify-token', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      console.log('Token verification result:', data);
+
+      if (data.success) {
+        alert('✅ Token is valid! User: ' + data.user.name);
+      } else {
+        alert('❌ Token is invalid: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Token test error:', error);
+      alert('Token test failed: ' + error.message);
+    }
+  };
+
   const handleContinue = async () => {
     if (!allDeclarationsChecked) {
       alert('Please agree to all declarations before continuing.');
@@ -75,12 +149,25 @@ const MockTestTerms = () => {
     setIsStarting(true);
 
     try {
-      const authToken = localStorage.getItem('authToken');
+      let authToken = localStorage.getItem('authToken');
+      console.log('🔍 Current auth token:', authToken ? 'Present' : 'Missing');
+
       if (!authToken || authToken === 'null' || authToken === 'undefined') {
-        alert('Please login to start the test');
-        navigate('/Login');
-        return;
+        console.log('⚠️ No valid auth token found, attempting development login...');
+        // Try development login first
+        const devLoginSuccess = await handleDevLogin();
+        if (devLoginSuccess) {
+          authToken = localStorage.getItem('authToken');
+          console.log('✅ Got new auth token after dev login');
+        } else {
+          alert('Authentication failed. Please try again or contact support.');
+          return;
+        }
+      } else {
+        console.log('✅ Using existing auth token');
       }
+
+      console.log('🚀 Starting test with token:', authToken ? authToken.substring(0, 20) + '...' : 'NO TOKEN');
 
       const response = await fetch(`/api/mock-tests/test/${testId}/start`, {
         method: 'POST',
@@ -91,15 +178,52 @@ const MockTestTerms = () => {
         body: JSON.stringify({}) // Add empty body to prevent stream issues
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      console.log('Response status:', response.status);
+
+      // Parse response only once
+      let data;
+      let parseSuccess = false;
+
+      try {
+        data = await response.json();
+        parseSuccess = true;
+        console.log('Response data:', data);
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        parseSuccess = false;
+        data = {
+          success: false,
+          message: `Server returned invalid response (${response.status}): ${response.statusText}`
+        };
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        const errorMsg = parseSuccess && data.message ? data.message : `HTTP error! status: ${response.status}`;
+        console.error('❌ Start test failed:', errorMsg);
+
+        if (response.status === 401) {
+          alert('Authentication failed. Please try logging in again.');
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+        } else if (response.status === 400) {
+          if (parseSuccess && data.message?.includes('Invalid user ID')) {
+            alert('Invalid user authentication. Please try development login.');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+          } else {
+            alert('Request error: ' + errorMsg);
+          }
+        } else {
+          alert('Error: ' + errorMsg);
+        }
+        return;
+      }
+
       if (data.success) {
         // Handle both new attempt and existing attempt (resume)
         const attemptId = data.attempt?._id || data.attemptId;
         if (attemptId) {
+          console.log('✅ Test started successfully, redirecting to:', attemptId);
           navigate(`/student/mock-test/${testId}/attempt/${attemptId}`);
         } else {
           throw new Error('No attempt ID received from server');
@@ -256,8 +380,18 @@ const MockTestTerms = () => {
                 </div>
               </div>
               <div className="profile-info">
-                <h4>JOHN SMITH</h4>
+                <h4>{(() => {
+                  try {
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    return user.name || 'Test Candidate';
+                  } catch {
+                    return 'Test Candidate';
+                  }
+                })()}</h4>
                 <p>Candidate</p>
+                <small style={{fontSize: '11px', color: '#666'}}>
+                  Auth: {localStorage.getItem('authToken') ? '✅ Logged In' : '❌ Not Logged In'}
+                </small>
               </div>
             </div>
 
@@ -322,12 +456,40 @@ const MockTestTerms = () => {
             </div>
 
             <div className="action-buttons">
-              <button 
+              <button
                 className="cat-btn cat-btn-back"
                 onClick={() => navigate(-1)}
               >
                 Previous
               </button>
+
+              {/* Development Buttons */}
+              {(!localStorage.getItem('authToken') || localStorage.getItem('authToken') === 'null') ? (
+                <button
+                  className="cat-btn cat-btn-dev"
+                  onClick={handleDevLogin}
+                  style={{
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    margin: '0 5px'
+                  }}
+                >
+                  Dev Login
+                </button>
+              ) : (
+                <button
+                  className="cat-btn cat-btn-test"
+                  onClick={handleTestToken}
+                  style={{
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    margin: '0 5px'
+                  }}
+                >
+                  Test Token
+                </button>
+              )}
+
               <button
                 className={`cat-btn cat-btn-continue ${!allDeclarationsChecked || isStarting ? 'disabled' : ''}`}
                 onClick={handleContinue}

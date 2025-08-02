@@ -1,5 +1,5 @@
 // CoursePurchase.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import "./CoursePurchase.css";
@@ -60,14 +60,39 @@ const CoursePurchase = () => {
   const location = useLocation();
   const course = location.state;
 
+  // Validate course data on component mount
+  useEffect(() => {
+    if (!course || !course._id) {
+      console.error("❌ No course data found in location state");
+      alert("❌ Course information is missing. Please select a course from the courses page.");
+      navigate('/student/dashboard');
+    }
+  }, [course, navigate]);
+
   const handlePayment = async () => {
+    // Validate course data before proceeding
+    if (!course || !course._id) {
+      console.error("❌ Course data is null or missing _id:", course);
+      alert("❌ Course information is missing. Please select a course again.");
+      navigate('/student/dashboard');
+      return;
+    }
+
     const authToken = localStorage.getItem("authToken");
     if (!authToken) {
       alert("❌ Please login again!");
       return;
     }
 
+    console.log("🔍 Starting payment for course:", course._id);
+
     try {
+      console.log("🔍 Course details:", {
+        id: course._id,
+        name: course.name || course.title,
+        price: course.price
+      });
+
       // ✅ 1️⃣ Check if already unlocked
       const checkRes = await fetch(
         "http://localhost:5000/api/user/student/my-courses",
@@ -78,7 +103,13 @@ const CoursePurchase = () => {
         }
       );
 
-      const checkData = await checkRes.json();
+      let checkData;
+      try {
+        checkData = await checkRes.json();
+      } catch (parseError) {
+        console.error("Failed to parse enrollment check response:", parseError);
+        checkData = { courses: [] };
+      }
      const alreadyUnlocked =
   Array.isArray(checkData?.courses) &&
   checkData.courses.some((c) => c._id === course._id);
@@ -94,9 +125,16 @@ const CoursePurchase = () => {
         `http://localhost:5000/api/courses/student/published-courses/${course._id}`
       );
 
-      const courseData = await courseRes.json();
+      let courseData;
+      try {
+        courseData = await courseRes.json();
+      } catch (parseError) {
+        console.error("Failed to parse course details response:", parseError);
+        alert("❌ Failed to load course details");
+        return;
+      }
 
-      if (!courseData.course) {
+      if (!courseRes.ok || !courseData.course) {
         alert("❌ Course not found");
         return;
       }
@@ -116,8 +154,16 @@ const CoursePurchase = () => {
         }
       );
 
-      const orderData = await orderRes.json();
-      if (!orderData.success) {
+      let orderData;
+      try {
+        orderData = await orderRes.json();
+      } catch (parseError) {
+        console.error("Failed to parse order creation response:", parseError);
+        alert("❌ Failed to create payment order");
+        return;
+      }
+
+      if (!orderRes.ok || !orderData.success) {
         alert("❌ Failed to create order");
         return;
       }
@@ -130,34 +176,80 @@ const CoursePurchase = () => {
         description: courseData.course.name || "Course Purchase",
         order_id: orderData.order.id,
         handler: function (response) {
-          // ✅ 4️⃣ Verify and unlock
-          fetch("http://localhost:5000/api/user/payment/verify-and-unlock", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${authToken}`,
-            },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              courseId: course._id,
-            }),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              console.log("✅ Verify API response:", data);
-              if (data.success) {
+          console.log("🔍 Payment success, starting verification...");
+
+          // Use setTimeout to avoid any potential async issues in Razorpay callback
+          setTimeout(async () => {
+            try {
+              console.log("Verification data:", {
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                courseId: course._id
+              });
+
+              const verifyResponse = await fetch("http://localhost:5000/api/user/payment/verify-and-unlock", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  courseId: course._id,
+                }),
+              });
+
+              console.log("Verification response status:", verifyResponse.status);
+              console.log("Verification response headers:", {
+                contentType: verifyResponse.headers.get("content-type"),
+                contentLength: verifyResponse.headers.get("content-length")
+              });
+
+              // Check if response has content before trying to parse
+              const contentType = verifyResponse.headers.get("content-type");
+              let data = { success: false, message: "Unknown error" };
+
+              if (contentType && contentType.includes("application/json")) {
+                try {
+                  const responseText = await verifyResponse.text();
+                  console.log("Raw response text:", responseText);
+
+                  if (responseText.trim()) {
+                    data = JSON.parse(responseText);
+                  } else {
+                    data = { success: false, message: "Empty response from server" };
+                  }
+                } catch (parseError) {
+                  console.error("JSON parse error:", parseError);
+                  data = {
+                    success: false,
+                    message: `Invalid response format: ${parseError.message}`
+                  };
+                }
+              } else {
+                data = {
+                  success: false,
+                  message: `Server returned non-JSON response (${verifyResponse.status})`
+                };
+              }
+
+              console.log("✅ Final verification result:", data);
+
+              if (verifyResponse.ok && data.success) {
                 alert("✅ Payment verified & course unlocked!");
                 navigate("/student/dashboard");
               } else {
-                alert("❌ Payment verification failed: " + data.message);
+                const errorMsg = data.message || `Verification failed (${verifyResponse.status})`;
+                console.error("❌ Verification failed:", errorMsg);
+                alert("❌ Payment verification failed: " + errorMsg);
               }
-            })
-            .catch((err) => {
-              console.error("❌ Verification error:", err);
-              alert("❌ Something went wrong. Please contact support.");
-            });
+            } catch (error) {
+              console.error("❌ Verification network error:", error);
+              alert("❌ Network error during verification. Please contact support with your payment details.");
+            }
+          }, 100); // Small delay to ensure Razorpay callback completes
         },
         prefill: {
           name: "Test User",
@@ -177,13 +269,48 @@ const CoursePurchase = () => {
       rzp.open();
     } catch (err) {
       console.error("❌ Error in handlePayment:", err);
-      alert("❌ Something went wrong. Please try again.");
+      console.error("❌ Course data at error:", course);
+      console.error("❌ Error stack:", err.stack);
+
+      // Provide specific error messages based on error type
+      if (err.message && err.message.includes('Cannot read properties of null')) {
+        alert("❌ Course data is missing. Please select the course again from the courses page.");
+        navigate('/student/dashboard');
+      } else if (err.message && err.message.includes('_id')) {
+        alert("❌ Invalid course information. Please try selecting the course again.");
+        navigate('/student/dashboard');
+      } else {
+        alert("❌ Something went wrong during payment setup. Please try again.");
+      }
     }
   };
 
   const toggleIndex = (index) => {
     setActiveIndex(index === activeIndex ? null : index);
   };
+
+  // Show loading or error state if course data is missing
+  if (!course || !course._id) {
+    return (
+      <div className="course-page container">
+        <div className="row">
+          <div className="col-12 text-center">
+            <div style={{ padding: '50px', textAlign: 'center' }}>
+              <h3>⚠️ Course Information Missing</h3>
+              <p>Please select a course from the courses page to proceed with purchase.</p>
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate('/student/dashboard')}
+                style={{ marginTop: '20px' }}
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="course-page container">
@@ -211,7 +338,7 @@ const CoursePurchase = () => {
           {/* Info Grid Below Title */}
           <div className="info-grid">
             <div className="info-item">
-              <span className="icon">👨‍🏫</span>
+              <span className="icon">👨‍����</span>
               <div>
                 <div className="label">Instructor</div>
                 <div className="value">Kumar Abhishek</div>
@@ -327,7 +454,7 @@ const CoursePurchase = () => {
               <div className="rating-summary">
                 <div>
                   <div className="rating-score">4.0</div>
-                  <div className="rating-stars">★★★★★</div>
+                  <div className="rating-stars">���★★★★</div>
                   <p className="total-rating">Total 6 Ratings</p>
                 </div>
 

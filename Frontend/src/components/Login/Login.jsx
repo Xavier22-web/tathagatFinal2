@@ -14,11 +14,59 @@ const Login = ({ onClose, setUser }) => {
   const [otpSuccess, setOtpSuccess] = useState(false);
   const [otpError, setOtpError] = useState("");
   const [toastMessage, setToastMessage] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const navigate = useNavigate();
 
   const emailOtpRefs = useRef([]);
   const phoneOtpRefs = useRef([]);
+
+  // Demo login function
+  const handleDemoLogin = async () => {
+    if (isLoggingIn) return; // Prevent multiple clicks
+
+    setIsLoggingIn(true);
+    try {
+      // Clear previous errors/messages
+      setOtpError("");
+      setToastMessage("");
+
+      console.log("🔍 Starting demo login...");
+      const response = await axios.post("/api/dev/login");
+
+      if (response.data.success && response.data.token) {
+        // Store authentication data
+        localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        // Set user context if setUser function exists
+        if (setUser && typeof setUser === 'function') {
+          setUser(response.data.user);
+        }
+
+        console.log("✅ Demo login successful");
+        setToastMessage("Demo login successful! Welcome " + response.data.user.name);
+
+        // Wait a moment to show success message, then redirect
+        setTimeout(() => {
+          // Close login modal and redirect (only if onClose function exists)
+          if (onClose && typeof onClose === 'function') {
+            onClose();
+          }
+          handlePostLoginRedirect("/student/dashboard");
+        }, 1000);
+
+      } else {
+        setOtpError("Demo login failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("❌ Demo login error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Unknown error occurred";
+      setOtpError("Demo login failed: " + errorMessage);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   // Helper function to handle post-login redirect
   const handlePostLoginRedirect = (serverRedirectTo) => {
@@ -205,6 +253,84 @@ const Login = ({ onClose, setUser }) => {
             <button className="tllogin-btn" onClick={() => setStep("email")}>
               Login with email
             </button>
+
+            {/* Demo Login Button */}
+            <div style={{ margin: '20px 0', textAlign: 'center' }}>
+              <div style={{
+                borderTop: '1px solid #ddd',
+                margin: '20px 0 15px 0',
+                position: 'relative'
+              }}>
+                <span style={{
+                  background: 'white',
+                  padding: '0 15px',
+                  color: '#666',
+                  fontSize: '14px',
+                  position: 'absolute',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  top: '-10px'
+                }}>
+                  या
+                </span>
+              </div>
+              <button
+                className="tllogin-btn"
+                onClick={handleDemoLogin}
+                disabled={isLoggingIn}
+                style={{
+                  background: isLoggingIn
+                    ? 'linear-gradient(135deg, #ccc 0%, #999 100%)'
+                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  color: 'white',
+                  marginTop: '10px',
+                  cursor: isLoggingIn ? 'not-allowed' : 'pointer',
+                  opacity: isLoggingIn ? 0.7 : 1
+                }}
+              >
+                {isLoggingIn ? '⏳ Logging in...' : '🚀 Demo Login (No OTP needed)'}
+              </button>
+              <p style={{
+                fontSize: '12px',
+                color: '#666',
+                marginTop: '5px',
+                textAlign: 'center'
+              }}>
+                Instant access for testing
+              </p>
+            </div>
+
+            {/* Error/Success Message */}
+            {otpError && (
+              <div style={{
+                color: '#dc3545',
+                fontSize: '14px',
+                textAlign: 'center',
+                marginTop: '10px',
+                padding: '10px',
+                background: '#f8d7da',
+                border: '1px solid #f5c6cb',
+                borderRadius: '5px'
+              }}>
+                {otpError}
+              </div>
+            )}
+
+            {toastMessage && (
+              <div style={{
+                color: '#155724',
+                fontSize: '14px',
+                textAlign: 'center',
+                marginTop: '10px',
+                padding: '10px',
+                background: '#d4edda',
+                border: '1px solid #c3e6cb',
+                borderRadius: '5px'
+              }}>
+                {toastMessage}
+              </div>
+            )}
           </>
         )}
 

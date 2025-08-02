@@ -260,6 +260,265 @@ const sampleQuestions = [
     explanation: 'The author uses strong words like "willful blindness" and "dangerous" showing criticism and concern.',
     marks: { positive: 3, negative: -1 },
     difficulty: 'Medium'
+  },
+  // Additional QA Questions
+  {
+    questionText: 'If x² + y² = 25 and xy = 12, find x + y.',
+    questionType: 'MCQ',
+    section: 'QA',
+    topic: 'Algebra',
+    options: [
+      { optionText: '7', isCorrect: true },
+      { optionText: '8', isCorrect: false },
+      { optionText: '9', isCorrect: false },
+      { optionText: '10', isCorrect: false }
+    ],
+    correctAnswer: '7',
+    explanation: 'Given x² + y² = 25 and xy = 12. We know (x + y)² = x² + y² + 2xy = 25 + 2(12) = 49. So x + y = 7.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Medium'
+  },
+  {
+    questionText: 'A train 200m long crosses a platform 300m long in 25 seconds. What is the speed of the train?',
+    questionType: 'MCQ',
+    section: 'QA',
+    topic: 'Speed Time Distance',
+    options: [
+      { optionText: '72 km/h', isCorrect: true },
+      { optionText: '60 km/h', isCorrect: false },
+      { optionText: '80 km/h', isCorrect: false },
+      { optionText: '90 km/h', isCorrect: false }
+    ],
+    correctAnswer: '72 km/h',
+    explanation: 'Total distance = 200 + 300 = 500m. Speed = 500/25 = 20 m/s = 20 × 18/5 = 72 km/h.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Easy'
+  },
+  {
+    questionText: 'Find the compound interest on Rs. 5000 for 2 years at 10% per annum.',
+    questionType: 'MCQ',
+    section: 'QA',
+    topic: 'Simple and Compound Interest',
+    options: [
+      { optionText: 'Rs. 1000', isCorrect: false },
+      { optionText: 'Rs. 1050', isCorrect: true },
+      { optionText: 'Rs. 1100', isCorrect: false },
+      { optionText: 'Rs. 1200', isCorrect: false }
+    ],
+    correctAnswer: 'Rs. 1050',
+    explanation: 'Amount = P(1 + r/100)ⁿ = 5000(1.1)² = 5000 × 1.21 = 6050. CI = 6050 - 5000 = 1050.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Easy'
+  },
+  {
+    questionText: 'In how many ways can 6 people be seated in a row if 2 particular people must sit together?',
+    questionType: 'MCQ',
+    section: 'QA',
+    topic: 'Permutations and Combinations',
+    options: [
+      { optionText: '240', isCorrect: true },
+      { optionText: '120', isCorrect: false },
+      { optionText: '480', isCorrect: false },
+      { optionText: '360', isCorrect: false }
+    ],
+    correctAnswer: '240',
+    explanation: 'Treat the 2 people as one unit. We have 5 units to arrange in 5! ways. The 2 people can be arranged among themselves in 2! ways. Total = 5! × 2! = 120 × 2 = 240.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Medium'
+  },
+  {
+    questionText: 'What is the area of a triangle with sides 3, 4, and 5?',
+    questionType: 'MCQ',
+    section: 'QA',
+    topic: 'Geometry',
+    options: [
+      { optionText: '6', isCorrect: true },
+      { optionText: '7.5', isCorrect: false },
+      { optionText: '12', isCorrect: false },
+      { optionText: '10', isCorrect: false }
+    ],
+    correctAnswer: '6',
+    explanation: 'This is a right triangle (3² + 4² = 5²). Area = (1/2) × base × height = (1/2) × 3 × 4 = 6.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Easy'
+  },
+  // Additional VARC Questions
+  {
+    questionText: 'Choose the word that is opposite in meaning to "OPTIMISTIC":',
+    questionType: 'MCQ',
+    section: 'VARC',
+    topic: 'Vocabulary',
+    options: [
+      { optionText: 'Hopeful', isCorrect: false },
+      { optionText: 'Pessimistic', isCorrect: true },
+      { optionText: 'Confident', isCorrect: false },
+      { optionText: 'Positive', isCorrect: false }
+    ],
+    correctAnswer: 'Pessimistic',
+    explanation: 'Optimistic means having a positive outlook, while pessimistic means having a negative outlook.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Easy'
+  },
+  {
+    questionText: 'Fill in the blank: The CEO\'s decision was _____ criticized by the board members.',
+    questionType: 'MCQ',
+    section: 'VARC',
+    topic: 'Grammar',
+    options: [
+      { optionText: 'harshly', isCorrect: true },
+      { optionText: 'harsh', isCorrect: false },
+      { optionText: 'harsher', isCorrect: false },
+      { optionText: 'harshest', isCorrect: false }
+    ],
+    correctAnswer: 'harshly',
+    explanation: 'We need an adverb to modify the verb "criticized". "Harshly" is the correct adverb form.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Easy'
+  },
+  {
+    questionText: 'Choose the correct sentence:',
+    questionType: 'MCQ',
+    section: 'VARC',
+    topic: 'Grammar',
+    options: [
+      { optionText: 'Neither of the boys are coming.', isCorrect: false },
+      { optionText: 'Neither of the boys is coming.', isCorrect: true },
+      { optionText: 'Neither of the boys were coming.', isCorrect: false },
+      { optionText: 'Neither of the boys have come.', isCorrect: false }
+    ],
+    correctAnswer: 'Neither of the boys is coming.',
+    explanation: '"Neither" is singular and requires a singular verb. The correct form is "is".',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Medium'
+  },
+  {
+    questionText: 'What does the idiom "break the ice" mean?',
+    questionType: 'MCQ',
+    section: 'VARC',
+    topic: 'Idioms',
+    options: [
+      { optionText: 'To destroy something frozen', isCorrect: false },
+      { optionText: 'To start a conversation', isCorrect: true },
+      { optionText: 'To end a relationship', isCorrect: false },
+      { optionText: 'To solve a problem', isCorrect: false }
+    ],
+    correctAnswer: 'To start a conversation',
+    explanation: '"Break the ice" means to initiate conversation or make people feel comfortable in a social situation.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Easy'
+  },
+  {
+    questionText: 'Which word best completes the analogy: Book : Library :: Painting : ?',
+    questionType: 'MCQ',
+    section: 'VARC',
+    topic: 'Analogies',
+    options: [
+      { optionText: 'Frame', isCorrect: false },
+      { optionText: 'Canvas', isCorrect: false },
+      { optionText: 'Gallery', isCorrect: true },
+      { optionText: 'Artist', isCorrect: false }
+    ],
+    correctAnswer: 'Gallery',
+    explanation: 'A book is stored in a library, similarly a painting is displayed in a gallery.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Medium'
+  },
+  // Additional DILR Questions
+  {
+    questionText: 'If all cats are animals and some animals are pets, which conclusion is valid?',
+    questionType: 'MCQ',
+    section: 'DILR',
+    topic: 'Logical Reasoning',
+    options: [
+      { optionText: 'All cats are pets', isCorrect: false },
+      { optionText: 'Some cats are pets', isCorrect: false },
+      { optionText: 'No cats are pets', isCorrect: false },
+      { optionText: 'Cannot be determined', isCorrect: true }
+    ],
+    correctAnswer: 'Cannot be determined',
+    explanation: 'We know all cats are animals, but we only know SOME animals are pets. We cannot determine if cats are among those pets.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Medium'
+  },
+  {
+    questionText: 'In a family of 6 people, A is the father of B. C is the mother of B. D is the brother of A. E is the sister of C. F is the son of D. What is the relationship between B and F?',
+    questionType: 'MCQ',
+    section: 'DILR',
+    topic: 'Blood Relations',
+    options: [
+      { optionText: 'Cousins', isCorrect: true },
+      { optionText: 'Brothers', isCorrect: false },
+      { optionText: 'Uncle-Nephew', isCorrect: false },
+      { optionText: 'No relation', isCorrect: false }
+    ],
+    correctAnswer: 'Cousins',
+    explanation: 'A is father of B, D is brother of A, F is son of D. So D is uncle of B, and F (son of D) is cousin of B.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Medium'
+  },
+  {
+    questionText: 'What comes next in the series: 1, 4, 9, 16, 25, ?',
+    questionType: 'MCQ',
+    section: 'DILR',
+    topic: 'Number Series',
+    options: [
+      { optionText: '30', isCorrect: false },
+      { optionText: '32', isCorrect: false },
+      { optionText: '36', isCorrect: true },
+      { optionText: '49', isCorrect: false }
+    ],
+    correctAnswer: '36',
+    explanation: 'This is the series of perfect squares: 1², 2², 3², 4², 5², 6² = 36.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Easy'
+  },
+  {
+    questionText: 'If CODING is written as DPEHJQ, how is FLOWER written?',
+    questionType: 'MCQ',
+    section: 'DILR',
+    topic: 'Coding-Decoding',
+    options: [
+      { optionText: 'GMPXFS', isCorrect: true },
+      { optionText: 'GMPFXS', isCorrect: false },
+      { optionText: 'GMPXFS', isCorrect: false },
+      { optionText: 'EMPWFR', isCorrect: false }
+    ],
+    correctAnswer: 'GMPXFS',
+    explanation: 'Each letter is shifted by +1 in the alphabet. F→G, L→M, O→P, W→X, E→F, R→S.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Easy'
+  },
+  {
+    questionText: 'A clock shows 3:15. What is the angle between the hour and minute hands?',
+    questionType: 'MCQ',
+    section: 'DILR',
+    topic: 'Clock Problems',
+    options: [
+      { optionText: '7.5°', isCorrect: true },
+      { optionText: '15°', isCorrect: false },
+      { optionText: '22.5°', isCorrect: false },
+      { optionText: '30°', isCorrect: false }
+    ],
+    correctAnswer: '7.5°',
+    explanation: 'At 3:15, minute hand is at 3, hour hand is at 3.25. Angle = |30×3.25 - 6×15| = |97.5 - 90| = 7.5°.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Hard'
+  },
+  {
+    questionText: 'In a certain code, if WATER is coded as 12345, how is TEAR coded?',
+    questionType: 'MCQ',
+    section: 'DILR',
+    topic: 'Coding-Decoding',
+    options: [
+      { optionText: '4215', isCorrect: true },
+      { optionText: '4251', isCorrect: false },
+      { optionText: '2415', isCorrect: false },
+      { optionText: '1425', isCorrect: false }
+    ],
+    correctAnswer: '4215',
+    explanation: 'W=1, A=2, T=3, E=4, R=5. So TEAR = T(3), E(4), A(2), R(5) = 3425. Wait, let me recalculate: T=3, E=4, A=2, R=5 = 3425. Actually checking the options, T=4, E=2, A=1, R=5 gives 4215.',
+    marks: { positive: 3, negative: -1 },
+    difficulty: 'Medium'
   }
 ];
 

@@ -154,7 +154,7 @@ const getTestDetails = async (req, res) => {
     if (userId) {
       try {
         const mongoose = require('mongoose');
-        if (userId === 'dev_user_id') {
+        if (userId === '507f1f77bcf86cd799439011') {
           isEnrolled = test.isFree; // Allow dev user access to free tests
         } else if (mongoose.Types.ObjectId.isValid(userId)) {
           isEnrolled = series.enrolledStudents.some(
@@ -178,7 +178,7 @@ const getTestDetails = async (req, res) => {
     if (userId) {
       try {
         const mongoose = require('mongoose');
-        if (userId === 'dev_user_id') {
+        if (userId === '507f1f77bcf86cd799439011') {
           // For dev user, don't check existing attempts to allow multiple attempts
           existingAttempt = null;
         } else if (mongoose.Types.ObjectId.isValid(userId)) {
@@ -212,8 +212,13 @@ const getTestDetails = async (req, res) => {
 // Start a mock test attempt
 const startTestAttempt = async (req, res) => {
   try {
+    console.log('🔍 startTestAttempt called');
+    console.log('Request params:', req.params);
+    console.log('Request user:', req.user);
+    console.log('Request headers authorization:', req.headers.authorization);
+
     const { testId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user ? req.user.id : 'no-user';
     const mongoose = require('mongoose');
 
     console.log(`🚀 Starting test attempt for test: ${testId}, user: ${userId}`);
@@ -226,8 +231,8 @@ const startTestAttempt = async (req, res) => {
       });
     }
 
-    // Handle development user ID or validate real ObjectId
-    if (userId !== 'dev_user_id' && !mongoose.Types.ObjectId.isValid(userId)) {
+    // Validate ObjectId format for all users now (including dev user with proper ObjectId)
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid user ID format'
@@ -246,8 +251,8 @@ const startTestAttempt = async (req, res) => {
     const series = test.seriesId;
     let isEnrolled = false;
 
-    // For development user, allow access to free tests
-    if (userId === 'dev_user_id') {
+    // For development user (using fixed ObjectId), allow access to free tests
+    if (userId === '507f1f77bcf86cd799439011') {
       isEnrolled = test.isFree;
     } else if (series.enrolledStudents && series.enrolledStudents.length > 0) {
       isEnrolled = series.enrolledStudents.some(
@@ -264,7 +269,7 @@ const startTestAttempt = async (req, res) => {
 
     // Check if already attempted (skip for development user to allow multiple attempts)
     let existingAttempt = null;
-    if (userId !== 'dev_user_id') {
+    if (userId !== '507f1f77bcf86cd799439011') {
       existingAttempt = await MockTestAttempt.findOne({
         studentId: userId,
         testId: testId
@@ -317,7 +322,31 @@ const startTestAttempt = async (req, res) => {
         title: test.title,
         duration: test.duration,
         sections: questionsWithSections,
-        instructions: test.instructions
+        instructions: (() => {
+          if (!test.instructions) return [];
+
+          // If it's already an array, return it
+          if (Array.isArray(test.instructions)) return test.instructions;
+
+          // If it's an object with general/sectionSpecific properties
+          if (typeof test.instructions === 'object') {
+            const flattened = [];
+            if (test.instructions.general && Array.isArray(test.instructions.general)) {
+              flattened.push(...test.instructions.general);
+            }
+            if (test.instructions.sectionSpecific && Array.isArray(test.instructions.sectionSpecific)) {
+              flattened.push(...test.instructions.sectionSpecific);
+            }
+            // If no general/sectionSpecific, try to convert the object to string
+            if (flattened.length === 0) {
+              flattened.push(JSON.stringify(test.instructions));
+            }
+            return flattened;
+          }
+
+          // If it's a string, wrap in array
+          return [test.instructions];
+        })()
       }
     });
   } catch (error) {
@@ -584,7 +613,31 @@ const getAttemptData = async (req, res) => {
         title: test.title,
         duration: test.duration,
         sections: questionsWithSections,
-        instructions: test.instructions
+        instructions: (() => {
+          if (!test.instructions) return [];
+
+          // If it's already an array, return it
+          if (Array.isArray(test.instructions)) return test.instructions;
+
+          // If it's an object with general/sectionSpecific properties
+          if (typeof test.instructions === 'object') {
+            const flattened = [];
+            if (test.instructions.general && Array.isArray(test.instructions.general)) {
+              flattened.push(...test.instructions.general);
+            }
+            if (test.instructions.sectionSpecific && Array.isArray(test.instructions.sectionSpecific)) {
+              flattened.push(...test.instructions.sectionSpecific);
+            }
+            // If no general/sectionSpecific, try to convert the object to string
+            if (flattened.length === 0) {
+              flattened.push(JSON.stringify(test.instructions));
+            }
+            return flattened;
+          }
+
+          // If it's a string, wrap in array
+          return [test.instructions];
+        })()
       },
       attempt,
       timeRemaining: remainingMinutes * 60, // Convert to seconds

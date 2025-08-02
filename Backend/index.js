@@ -13,6 +13,12 @@ const multer = require("multer");
 
 dotenv.config();
 
+// Debug environment variables
+console.log('🔍 Environment Debug:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('MONGO_URI exists:', !!process.env.MONGO_URI);
+console.log('MONGO_URI length:', process.env.MONGO_URI ? process.env.MONGO_URI.length : 0);
+
 const Connection = require("./dbConnection");
 Connection();
 
@@ -88,6 +94,81 @@ app.get("/api/test", (req, res) => {
         environment: process.env.NODE_ENV,
         timestamp: new Date().toISOString()
     });
+});
+
+// ======================= Development Test User ========================================
+app.post("/api/dev/login", (req, res) => {
+    try {
+        const jwt = require('jsonwebtoken');
+        const mongoose = require('mongoose');
+
+        console.log('🔍 Development login request received');
+
+        // Create a fixed ObjectId for development user
+        const devUserId = '507f1f77bcf86cd799439011'; // Fixed valid ObjectId for development
+
+        // Create a development user token
+        const devUser = {
+            id: devUserId,
+            email: 'dev@test.com',
+            name: 'Development User',
+            role: 'student'
+        };
+
+        const jwtSecret = process.env.JWT_SECRET || 'test_secret_key_for_development';
+        console.log('JWT Secret exists:', !!jwtSecret);
+
+        const token = jwt.sign(devUser, jwtSecret, { expiresIn: '24h' });
+
+        console.log('✅ Development token created for user:', devUserId);
+
+        res.status(200).json({
+            success: true,
+            message: "Development user logged in",
+            token: token,
+            user: devUser
+        });
+    } catch (error) {
+        console.error('❌ Dev login error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Development login failed",
+            error: error.message
+        });
+    }
+});
+
+// ======================= Debug Token Validation ========================================
+app.get("/api/dev/verify-token", (req, res) => {
+    const jwt = require('jsonwebtoken');
+
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(400).json({
+                success: false,
+                message: "No token provided"
+            });
+        }
+
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'test_secret_key_for_development');
+
+        console.log('✅ Token verified for user:', decoded);
+
+        res.status(200).json({
+            success: true,
+            message: "Token is valid",
+            user: decoded
+        });
+    } catch (error) {
+        console.error('❌ Token verification failed:', error.message);
+        res.status(401).json({
+            success: false,
+            message: "Invalid token",
+            error: error.message
+        });
+    }
 });
 
 // ======================= Add Sample Data on Startup ========================================
@@ -519,7 +600,25 @@ if (process.env.NODE_ENV === "production") {
 
 // ======================= Server Start ==========================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
+
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`🌐 Server accessible at http://0.0.0.0:${PORT}`);
+    console.log(`✅ Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`✅ JWT Secret loaded: ${!!process.env.JWT_SECRET}`);
+});
+
+server.on('error', (error) => {
+    console.error('❌ Server startup error:', error);
+    if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} is already in use`);
+    }
+});
+
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('SIGTERM signal received: closing HTTP server');
+    server.close(() => {
+        console.log('HTTP server closed');
+    });
 });
