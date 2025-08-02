@@ -109,16 +109,21 @@ const MockTestTerms = () => {
 
     try {
       let authToken = localStorage.getItem('authToken');
+      console.log('🔍 Current auth token:', authToken ? 'Present' : 'Missing');
+
       if (!authToken || authToken === 'null' || authToken === 'undefined') {
+        console.log('⚠️ No valid auth token found, attempting development login...');
         // Try development login first
         const devLoginSuccess = await handleDevLogin();
         if (devLoginSuccess) {
           authToken = localStorage.getItem('authToken');
+          console.log('✅ Got new auth token after dev login');
         } else {
-          alert('Please login to start the test');
-          navigate('/Login');
+          alert('Authentication failed. Please try again or contact support.');
           return;
         }
+      } else {
+        console.log('✅ Using existing auth token');
       }
 
       console.log('🚀 Starting test with token:', authToken ? authToken.substring(0, 20) + '...' : 'NO TOKEN');
