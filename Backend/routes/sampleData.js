@@ -680,27 +680,27 @@ router.get('/create-mock-tests', async (req, res) => {
           {
             name: 'VARC',
             duration: 60,
-            totalQuestions: 3,
-            totalMarks: 9,
+            totalQuestions: 8,
+            totalMarks: 24,
             questions: createdQuestions.filter(q => q.section === 'VARC').map(q => q._id)
           },
           {
             name: 'DILR',
             duration: 60,
-            totalQuestions: 3,
-            totalMarks: 9,
-            questions: []
+            totalQuestions: 6,
+            totalMarks: 18,
+            questions: createdQuestions.filter(q => q.section === 'DILR').map(q => q._id)
           },
           {
             name: 'QA',
             duration: 60,
-            totalQuestions: 3,
-            totalMarks: 9,
+            totalQuestions: 10,
+            totalMarks: 30,
             questions: createdQuestions.filter(q => q.section === 'QA').map(q => q._id)
           }
         ],
-        totalQuestions: 9,
-        totalMarks: 27,
+        totalQuestions: 24,
+        totalMarks: 72,
         positiveMarks: 3,
         negativeMarks: 1,
         createdBy: admin._id,
@@ -720,27 +720,27 @@ router.get('/create-mock-tests', async (req, res) => {
           {
             name: 'VARC',
             duration: 60,
-            totalQuestions: 3,
-            totalMarks: 9,
+            totalQuestions: 8,
+            totalMarks: 24,
             questions: createdQuestions.filter(q => q.section === 'VARC').map(q => q._id)
           },
           {
             name: 'DILR',
             duration: 60,
-            totalQuestions: 3,
-            totalMarks: 9,
-            questions: []
+            totalQuestions: 6,
+            totalMarks: 18,
+            questions: createdQuestions.filter(q => q.section === 'DILR').map(q => q._id)
           },
           {
             name: 'QA',
             duration: 60,
-            totalQuestions: 3,
-            totalMarks: 9,
+            totalQuestions: 10,
+            totalMarks: 30,
             questions: createdQuestions.filter(q => q.section === 'QA').map(q => q._id)
           }
         ],
-        totalQuestions: 9,
-        totalMarks: 27,
+        totalQuestions: 24,
+        totalMarks: 72,
         positiveMarks: 3,
         negativeMarks: 1,
         createdBy: admin._id,
@@ -760,20 +760,27 @@ router.get('/create-mock-tests', async (req, res) => {
           {
             name: 'VARC',
             duration: 60,
-            totalQuestions: 2,
-            totalMarks: 6,
+            totalQuestions: 8,
+            totalMarks: 24,
             questions: createdQuestions.filter(q => q.section === 'VARC').map(q => q._id)
+          },
+          {
+            name: 'DILR',
+            duration: 60,
+            totalQuestions: 6,
+            totalMarks: 18,
+            questions: createdQuestions.filter(q => q.section === 'DILR').map(q => q._id)
           },
           {
             name: 'QA',
             duration: 60,
-            totalQuestions: 2,
-            totalMarks: 6,
+            totalQuestions: 10,
+            totalMarks: 30,
             questions: createdQuestions.filter(q => q.section === 'QA').map(q => q._id)
           }
         ],
-        totalQuestions: 4,
-        totalMarks: 12,
+        totalQuestions: 24,
+        totalMarks: 72,
         positiveMarks: 3,
         negativeMarks: 1,
         createdBy: admin._id,
