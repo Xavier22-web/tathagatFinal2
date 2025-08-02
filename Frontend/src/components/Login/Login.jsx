@@ -20,6 +20,35 @@ const Login = ({ onClose, setUser }) => {
   const emailOtpRefs = useRef([]);
   const phoneOtpRefs = useRef([]);
 
+  // Demo login function
+  const handleDemoLogin = async () => {
+    try {
+      console.log("🔍 Starting demo login...");
+      const response = await axios.post("/api/dev/login");
+
+      if (response.data.success && response.data.token) {
+        // Store authentication data
+        localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        // Set user context
+        setUser(response.data.user);
+
+        console.log("✅ Demo login successful");
+        setToastMessage("Demo login successful! Welcome " + response.data.user.name);
+
+        // Close login modal and redirect
+        onClose();
+        handlePostLoginRedirect("/student/dashboard");
+      } else {
+        setOtpError("Demo login failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("❌ Demo login error:", error);
+      setOtpError("Demo login failed: " + (error.response?.data?.message || error.message));
+    }
+  };
+
   // Helper function to handle post-login redirect
   const handlePostLoginRedirect = (serverRedirectTo) => {
     // Check for pending course enrollment
