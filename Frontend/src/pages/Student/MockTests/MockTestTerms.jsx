@@ -90,7 +90,7 @@ const MockTestTerms = () => {
       if (response.ok && parseSuccess && data.success && data.token) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        console.log('✅ Development user logged in successfully');
+        console.log('��� Development user logged in successfully');
         console.log('Token stored:', data.token.substring(0, 20) + '...');
         alert('Development user logged in successfully! You can now start the test.');
         return true;
@@ -104,6 +104,35 @@ const MockTestTerms = () => {
       console.error('❌ Dev login error:', error);
       alert('Development login error: ' + error.message);
       return false;
+    }
+  };
+
+  const handleTestToken = async () => {
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        alert('No token found. Please login first.');
+        return;
+      }
+
+      const response = await fetch('/api/dev/verify-token', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      console.log('Token verification result:', data);
+
+      if (data.success) {
+        alert('✅ Token is valid! User: ' + data.user.name);
+      } else {
+        alert('❌ Token is invalid: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Token test error:', error);
+      alert('Token test failed: ' + error.message);
     }
   };
 
