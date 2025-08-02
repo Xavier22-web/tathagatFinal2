@@ -200,7 +200,7 @@ const getTestDetails = async (req, res) => {
       attempt: existingAttempt
     });
   } catch (error) {
-    console.error('❌ Error fetching test details:', error);
+    console.error('��� Error fetching test details:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch test details',
@@ -231,8 +231,8 @@ const startTestAttempt = async (req, res) => {
       });
     }
 
-    // Handle development user ID or validate real ObjectId
-    if (userId !== 'dev_user_id' && !mongoose.Types.ObjectId.isValid(userId)) {
+    // Validate ObjectId format for all users now (including dev user with proper ObjectId)
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid user ID format'
