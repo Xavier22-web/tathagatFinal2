@@ -520,31 +520,35 @@ const MockTestAttempt = () => {
             ))}
 
             <div className="question-options">
-              {currentQuestionData?.options?.map((option, index) => {
-                const optionLabel = String.fromCharCode(65 + index); // A, B, C, D
-                const questionId = currentQuestionData._id;
-                const optionText = typeof option === 'object' ? option.optionText : option;
-                const isSelected = responses[questionId] === optionText;
+              {currentQuestionData?.options && currentQuestionData.options.length > 0 ? (
+                currentQuestionData.options.map((option, index) => {
+                  const optionLabel = String.fromCharCode(65 + index); // A, B, C, D
+                  const questionId = currentQuestionData._id;
+                  const optionText = typeof option === 'object' ? option.optionText : option;
+                  const isSelected = responses[questionId] === optionText;
 
-                return (
-                  <label key={index} className={`option-label ${isSelected ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name={`question-${questionId}`}
-                      value={optionText}
-                      checked={isSelected}
-                      onChange={() => handleAnswerSelect(optionText)}
-                    />
-                    <span className="option-indicator">{optionLabel}</span>
-                    <span className="option-text">
-                      {optionText}
-                    </span>
-                    {typeof option === 'object' && option.optionImage && (
-                      <img src={option.optionImage} alt="option" className="option-image" />
-                    )}
-                  </label>
-                );
-              })}
+                  return (
+                    <label key={index} className={`option-label ${isSelected ? 'selected' : ''}`}>
+                      <input
+                        type="radio"
+                        name={`question-${questionId}`}
+                        value={optionText}
+                        checked={isSelected}
+                        onChange={() => handleAnswerSelect(optionText)}
+                      />
+                      <span className="option-indicator">{optionLabel}</span>
+                      <span className="option-text">
+                        {optionText}
+                      </span>
+                      {typeof option === 'object' && option.optionImage && (
+                        <img src={option.optionImage} alt="option" className="option-image" />
+                      )}
+                    </label>
+                  );
+                })
+              ) : (
+                <p>Loading options...</p>
+              )}
             </div>
           </div>
 
