@@ -62,6 +62,32 @@ const MockTestTerms = () => {
 
   const [isStarting, setIsStarting] = useState(false);
 
+  const handleDevLogin = async () => {
+    try {
+      const response = await fetch('/api/dev/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.token) {
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          console.log('Development user logged in successfully');
+          alert('Development user logged in! You can now start the test.');
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error('Dev login failed:', error);
+      return false;
+    }
+  };
+
   const handleContinue = async () => {
     if (!allDeclarationsChecked) {
       alert('Please agree to all declarations before continuing.');
@@ -75,11 +101,17 @@ const MockTestTerms = () => {
     setIsStarting(true);
 
     try {
-      const authToken = localStorage.getItem('authToken');
+      let authToken = localStorage.getItem('authToken');
       if (!authToken || authToken === 'null' || authToken === 'undefined') {
-        alert('Please login to start the test');
-        navigate('/Login');
-        return;
+        // Try development login first
+        const devLoginSuccess = await handleDevLogin();
+        if (devLoginSuccess) {
+          authToken = localStorage.getItem('authToken');
+        } else {
+          alert('Please login to start the test');
+          navigate('/Login');
+          return;
+        }
       }
 
       const response = await fetch(`/api/mock-tests/test/${testId}/start`, {
