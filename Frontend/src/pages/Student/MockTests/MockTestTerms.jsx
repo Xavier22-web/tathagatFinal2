@@ -327,8 +327,18 @@ const MockTestTerms = () => {
                 </div>
               </div>
               <div className="profile-info">
-                <h4>JOHN SMITH</h4>
+                <h4>{(() => {
+                  try {
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    return user.name || 'Test Candidate';
+                  } catch {
+                    return 'Test Candidate';
+                  }
+                })()}</h4>
                 <p>Candidate</p>
+                <small style={{fontSize: '11px', color: '#666'}}>
+                  Auth: {localStorage.getItem('authToken') ? '✅ Logged In' : '❌ Not Logged In'}
+                </small>
               </div>
             </div>
 
