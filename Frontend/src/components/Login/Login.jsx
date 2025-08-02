@@ -23,6 +23,9 @@ const Login = ({ onClose, setUser }) => {
 
   // Demo login function
   const handleDemoLogin = async () => {
+    if (isLoggingIn) return; // Prevent multiple clicks
+
+    setIsLoggingIn(true);
     try {
       // Clear previous errors/messages
       setOtpError("");
