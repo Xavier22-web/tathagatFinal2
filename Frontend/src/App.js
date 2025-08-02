@@ -132,7 +132,7 @@ const AppContent = () => {
         <Route path="/" element={<Home />} />
        
        
-        <Route path="/Login" element={<Login setUser={setUser} />} />
+        <Route path="/Login" element={<Login setUser={setUser} onClose={() => {}} />} />
 
 
         {/* Admin routes */}
