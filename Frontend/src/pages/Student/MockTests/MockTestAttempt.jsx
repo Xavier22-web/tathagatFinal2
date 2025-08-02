@@ -164,7 +164,7 @@ const MockTestAttempt = () => {
     try {
       const authToken = localStorage.getItem('authToken');
       await fetch(`/api/mock-tests/attempt/${attemptId}/response`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
