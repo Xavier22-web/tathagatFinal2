@@ -597,7 +597,9 @@ const MockTestAttempt = () => {
             <div className="instructions-content">
               {Array.isArray(testData.instructions) && testData.instructions.length > 0 ? (
                 testData.instructions.map((instruction, index) => (
-                  <p key={index}>{String(instruction)}</p>
+                  <p key={index}>
+                    {typeof instruction === 'object' ? JSON.stringify(instruction) : String(instruction)}
+                  </p>
                 ))
               ) : (
                 <p>No instructions available</p>
