@@ -346,7 +346,15 @@ const MockTestAttempt = () => {
   };
 
   const getCurrentQuestion = () => {
-    return testData?.sections[currentSection]?.questions[currentQuestion];
+    const question = testData?.sections[currentSection]?.questions[currentQuestion];
+    console.log('Getting current question:', {
+      currentSection,
+      currentQuestion,
+      sectionName: testData?.sections[currentSection]?.name,
+      totalQuestions: testData?.sections[currentSection]?.questions?.length,
+      question: question
+    });
+    return question;
   };
 
   const getQuestionStatus = (questionIndex) => {
