@@ -290,6 +290,21 @@ const MockTestAttempt = () => {
 
   const handleSubmitTest = async () => {
     try {
+      // Calculate final section result if not already calculated
+      if (currentSectionResult === null || currentSectionResult.sectionName !== testData.sections[currentSection].name) {
+        const sectionResult = calculateSectionResult(currentSection);
+        setCompletedSections(prev => {
+          const updated = [...prev];
+          const existingIndex = updated.findIndex(s => s.sectionName === sectionResult.sectionName);
+          if (existingIndex >= 0) {
+            updated[existingIndex] = sectionResult;
+          } else {
+            updated.push(sectionResult);
+          }
+          return updated;
+        });
+      }
+
       const authToken = localStorage.getItem('authToken');
       const response = await fetch(`/api/mock-tests/attempt/${attemptId}/submit`, {
         method: 'POST',
@@ -301,8 +316,26 @@ const MockTestAttempt = () => {
 
       const data = await response.json();
       if (data.success) {
-        alert(`Test submitted successfully! Your score: ${data.score}`);
-        navigate('/student/mock-tests');
+        // Calculate combined results
+        const allSections = [...completedSections];
+        if (!allSections.find(s => s.sectionName === testData.sections[currentSection].name)) {
+          allSections.push(calculateSectionResult(currentSection));
+        }
+
+        const combinedResult = {
+          sections: allSections,
+          totalScore: allSections.reduce((sum, section) => sum + section.score, 0),
+          maxTotalScore: allSections.reduce((sum, section) => sum + section.maxScore, 0),
+          totalAnswered: allSections.reduce((sum, section) => sum + section.answered, 0),
+          totalQuestions: allSections.reduce((sum, section) => sum + section.totalQuestions, 0),
+          percentage: 0,
+          backendScore: data.score
+        };
+
+        combinedResult.percentage = (combinedResult.totalScore / combinedResult.maxTotalScore) * 100;
+
+        setFinalResult(combinedResult);
+        setShowFinalResult(true);
       }
     } catch (error) {
       console.error('Error submitting test:', error);
