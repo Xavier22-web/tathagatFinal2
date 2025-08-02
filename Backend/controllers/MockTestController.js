@@ -269,7 +269,7 @@ const startTestAttempt = async (req, res) => {
 
     // Check if already attempted (skip for development user to allow multiple attempts)
     let existingAttempt = null;
-    if (userId !== 'dev_user_id') {
+    if (userId !== '507f1f77bcf86cd799439011') {
       existingAttempt = await MockTestAttempt.findOne({
         studentId: userId,
         testId: testId
