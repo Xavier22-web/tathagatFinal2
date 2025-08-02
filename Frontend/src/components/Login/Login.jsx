@@ -37,8 +37,10 @@ const Login = ({ onClose, setUser }) => {
         console.log("✅ Demo login successful");
         setToastMessage("Demo login successful! Welcome " + response.data.user.name);
 
-        // Close login modal and redirect
-        onClose();
+        // Close login modal and redirect (only if onClose function exists)
+        if (onClose && typeof onClose === 'function') {
+          onClose();
+        }
         handlePostLoginRedirect("/student/dashboard");
       } else {
         setOtpError("Demo login failed. Please try again.");
