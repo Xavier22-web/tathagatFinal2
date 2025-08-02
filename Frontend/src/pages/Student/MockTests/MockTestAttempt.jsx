@@ -635,15 +635,19 @@ const MockTestAttempt = () => {
           <div className="question-palette">
             <h4>Choose a Question</h4>
             <div className="palette-grid">
-              {testData.sections[currentSection]?.questions?.map((_, index) => (
-                <button
-                  key={index}
-                  className={`palette-btn ${getQuestionStatus(index)} ${currentQuestion === index ? 'current' : ''}`}
-                  onClick={() => handleQuestionSelect(index)}
-                >
-                  {index + 1}
-                </button>
-              ))}
+              {testData.sections[currentSection]?.questions?.length > 0 ? (
+                testData.sections[currentSection].questions.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`palette-btn ${getQuestionStatus(index)} ${currentQuestion === index ? 'current' : ''}`}
+                    onClick={() => handleQuestionSelect(index)}
+                  >
+                    {index + 1}
+                  </button>
+                ))
+              ) : (
+                <p>No questions available for this section</p>
+              )}
             </div>
           </div>
 
