@@ -279,12 +279,16 @@ const MockTestAttempt = () => {
 
   const proceedToNextSection = () => {
     setShowSectionResult(false);
+    setCurrentSectionResult(null);
 
     if (currentSection < testData?.sections?.length - 1) {
       setCurrentSection(prev => prev + 1);
       setCurrentQuestion(0);
       setVisitedQuestions(new Set([0]));
       setSectionTimeRemaining(3600);
+    } else {
+      // Last section completed, proceed to final submission
+      handleSubmitTest();
     }
   };
 
