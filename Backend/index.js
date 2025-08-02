@@ -99,10 +99,14 @@ app.get("/api/test", (req, res) => {
 // ======================= Development Test User ========================================
 app.post("/api/dev/login", (req, res) => {
     const jwt = require('jsonwebtoken');
+    const mongoose = require('mongoose');
+
+    // Create a fixed ObjectId for development user
+    const devUserId = '507f1f77bcf86cd799439011'; // Fixed valid ObjectId for development
 
     // Create a development user token
     const devUser = {
-        id: 'dev_user_id',
+        id: devUserId,
         email: 'dev@test.com',
         name: 'Development User',
         role: 'student'
@@ -377,7 +381,7 @@ const addSampleAnnouncements = async () => {
 
         // Display summary
         const totalAnnouncements = await Announcement.countDocuments();
-        console.log(`\n�� Total announcements in database: ${totalAnnouncements}`);
+        console.log(`\n📢 Total announcements in database: ${totalAnnouncements}`);
 
     } catch (error) {
         console.error('❌ Error adding sample announcements:', error);
