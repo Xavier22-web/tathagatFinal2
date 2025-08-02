@@ -90,7 +90,7 @@ const MockTestTerms = () => {
       if (response.ok && parseSuccess && data.success && data.token) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        console.log('��� Development user logged in successfully');
+        console.log('✅ Development user logged in successfully');
         console.log('Token stored:', data.token.substring(0, 20) + '...');
         alert('Development user logged in successfully! You can now start the test.');
         return true;
@@ -463,18 +463,30 @@ const MockTestTerms = () => {
                 Previous
               </button>
 
-              {/* Development Login Button - Only show if not logged in */}
-              {(!localStorage.getItem('authToken') || localStorage.getItem('authToken') === 'null') && (
+              {/* Development Buttons */}
+              {(!localStorage.getItem('authToken') || localStorage.getItem('authToken') === 'null') ? (
                 <button
                   className="cat-btn cat-btn-dev"
                   onClick={handleDevLogin}
                   style={{
                     backgroundColor: '#2196F3',
                     color: 'white',
-                    margin: '0 10px'
+                    margin: '0 5px'
                   }}
                 >
                   Dev Login
+                </button>
+              ) : (
+                <button
+                  className="cat-btn cat-btn-test"
+                  onClick={handleTestToken}
+                  style={{
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    margin: '0 5px'
+                  }}
+                >
+                  Test Token
                 </button>
               )}
 
