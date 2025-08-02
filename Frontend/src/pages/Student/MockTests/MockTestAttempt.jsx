@@ -26,6 +26,13 @@ const MockTestAttempt = () => {
   const [drawingMode, setDrawingMode] = useState(false);
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
+
+  // Section result states
+  const [showSectionResult, setShowSectionResult] = useState(false);
+  const [currentSectionResult, setCurrentSectionResult] = useState(null);
+  const [completedSections, setCompletedSections] = useState([]);
+  const [showFinalResult, setShowFinalResult] = useState(false);
+  const [finalResult, setFinalResult] = useState(null);
   
   const timerRef = useRef(null);
 
