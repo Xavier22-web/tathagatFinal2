@@ -609,16 +609,49 @@ const MockTestAttempt = () => {
           <div className="scratchpad-modal">
             <div className="scratchpad-header">
               <h4>Scratch Pad</h4>
+              <div className="scratchpad-controls">
+                <button
+                  className={`mode-btn ${!drawingMode ? 'active' : ''}`}
+                  onClick={() => setDrawingMode(false)}
+                >
+                  📝 Text
+                </button>
+                <button
+                  className={`mode-btn ${drawingMode ? 'active' : ''}`}
+                  onClick={() => setDrawingMode(true)}
+                >
+                  ✏️ Draw
+                </button>
+              </div>
               <button onClick={() => setShowScratchPad(false)}>×</button>
             </div>
-            <textarea
-              className="scratchpad-textarea"
-              value={scratchPadContent}
-              onChange={(e) => setScratchPadContent(e.target.value)}
-              placeholder="Use this space for your rough work..."
-            />
+
+            {drawingMode ? (
+              <canvas
+                ref={canvasRef}
+                className="scratchpad-canvas"
+                width={460}
+                height={300}
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+              />
+            ) : (
+              <textarea
+                className="scratchpad-textarea"
+                value={scratchPadContent}
+                onChange={(e) => setScratchPadContent(e.target.value)}
+                placeholder="Use this space for your rough work..."
+              />
+            )}
+
             <div className="scratchpad-actions">
-              <button onClick={() => setScratchPadContent('')}>Clear All</button>
+              {drawingMode ? (
+                <button onClick={clearCanvas}>Clear Drawing</button>
+              ) : (
+                <button onClick={() => setScratchPadContent('')}>Clear Text</button>
+              )}
             </div>
           </div>
         </div>
