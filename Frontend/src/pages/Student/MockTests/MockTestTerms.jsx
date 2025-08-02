@@ -64,6 +64,7 @@ const MockTestTerms = () => {
 
   const handleDevLogin = async () => {
     try {
+      console.log('🔍 Attempting development login...');
       const response = await fetch('/api/dev/login', {
         method: 'POST',
         headers: {
@@ -71,19 +72,25 @@ const MockTestTerms = () => {
         }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.token) {
-          localStorage.setItem('authToken', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          console.log('Development user logged in successfully');
-          alert('Development user logged in! You can now start the test.');
-          return true;
-        }
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (response.ok && data.success && data.token) {
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        console.log('✅ Development user logged in successfully');
+        console.log('Token stored:', data.token.substring(0, 20) + '...');
+        alert('Development user logged in successfully! You can now start the test.');
+        return true;
+      } else {
+        console.error('❌ Dev login failed:', data);
+        alert('Development login failed: ' + (data.message || 'Unknown error'));
+        return false;
       }
-      return false;
     } catch (error) {
-      console.error('Dev login failed:', error);
+      console.error('❌ Dev login error:', error);
+      alert('Development login error: ' + error.message);
       return false;
     }
   };
