@@ -591,7 +591,9 @@ const getAttemptData = async (req, res) => {
         title: test.title,
         duration: test.duration,
         sections: questionsWithSections,
-        instructions: test.instructions
+        instructions: Array.isArray(test.instructions)
+          ? test.instructions
+          : (test.instructions ? [test.instructions] : [])
       },
       attempt,
       timeRemaining: remainingMinutes * 60, // Convert to seconds
