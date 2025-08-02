@@ -212,8 +212,13 @@ const getTestDetails = async (req, res) => {
 // Start a mock test attempt
 const startTestAttempt = async (req, res) => {
   try {
+    console.log('🔍 startTestAttempt called');
+    console.log('Request params:', req.params);
+    console.log('Request user:', req.user);
+    console.log('Request headers authorization:', req.headers.authorization);
+
     const { testId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user ? req.user.id : 'no-user';
     const mongoose = require('mongoose');
 
     console.log(`🚀 Starting test attempt for test: ${testId}, user: ${userId}`);
