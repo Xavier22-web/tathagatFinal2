@@ -148,22 +148,27 @@ export const fetchMyCourses = async () => {
 export const startMockTest = async (testId) => {
   try {
     const authToken = localStorage.getItem('authToken');
-    console.log('Starting mock test with token:', authToken ? 'Present' : 'Missing');
+    console.log('🚀 Starting mock test with token:', authToken ? 'Present' : 'Missing');
 
     if (!authToken) {
       throw new Error('Authentication required. Please log in to start the test.');
     }
+
+    console.log('Making API call to:', `${API_BASE_URL}/api/mock-tests/test/${testId}/start`);
 
     const data = await fetchWithErrorHandling(`${API_BASE_URL}/api/mock-tests/test/${testId}/start`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({})
     });
+
+    console.log('✅ Mock test started successfully:', data);
     return data;
   } catch (error) {
-    console.error('Error starting mock test:', error);
+    console.error('❌ Error starting mock test:', error);
     throw error;
   }
 };
