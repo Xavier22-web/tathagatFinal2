@@ -277,14 +277,19 @@ const Login = ({ onClose, setUser }) => {
               <button
                 className="tllogin-btn"
                 onClick={handleDemoLogin}
+                disabled={isLoggingIn}
                 style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: isLoggingIn
+                    ? 'linear-gradient(135deg, #ccc 0%, #999 100%)'
+                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   border: 'none',
                   color: 'white',
-                  marginTop: '10px'
+                  marginTop: '10px',
+                  cursor: isLoggingIn ? 'not-allowed' : 'pointer',
+                  opacity: isLoggingIn ? 0.7 : 1
                 }}
               >
-                🚀 Demo Login (No OTP needed)
+                {isLoggingIn ? '⏳ Logging in...' : '🚀 Demo Login (No OTP needed)'}
               </button>
               <p style={{
                 fontSize: '12px',
