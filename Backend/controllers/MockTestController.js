@@ -322,9 +322,31 @@ const startTestAttempt = async (req, res) => {
         title: test.title,
         duration: test.duration,
         sections: questionsWithSections,
-        instructions: Array.isArray(test.instructions)
-          ? test.instructions
-          : (test.instructions ? [test.instructions] : [])
+        instructions: (() => {
+          if (!test.instructions) return [];
+
+          // If it's already an array, return it
+          if (Array.isArray(test.instructions)) return test.instructions;
+
+          // If it's an object with general/sectionSpecific properties
+          if (typeof test.instructions === 'object') {
+            const flattened = [];
+            if (test.instructions.general && Array.isArray(test.instructions.general)) {
+              flattened.push(...test.instructions.general);
+            }
+            if (test.instructions.sectionSpecific && Array.isArray(test.instructions.sectionSpecific)) {
+              flattened.push(...test.instructions.sectionSpecific);
+            }
+            // If no general/sectionSpecific, try to convert the object to string
+            if (flattened.length === 0) {
+              flattened.push(JSON.stringify(test.instructions));
+            }
+            return flattened;
+          }
+
+          // If it's a string, wrap in array
+          return [test.instructions];
+        })()
       }
     });
   } catch (error) {
