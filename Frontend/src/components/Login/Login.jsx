@@ -276,6 +276,37 @@ const Login = ({ onClose, setUser }) => {
                 Instant access for testing
               </p>
             </div>
+
+            {/* Error/Success Message */}
+            {otpError && (
+              <div style={{
+                color: '#dc3545',
+                fontSize: '14px',
+                textAlign: 'center',
+                marginTop: '10px',
+                padding: '10px',
+                background: '#f8d7da',
+                border: '1px solid #f5c6cb',
+                borderRadius: '5px'
+              }}>
+                {otpError}
+              </div>
+            )}
+
+            {toastMessage && (
+              <div style={{
+                color: '#155724',
+                fontSize: '14px',
+                textAlign: 'center',
+                marginTop: '10px',
+                padding: '10px',
+                background: '#d4edda',
+                border: '1px solid #c3e6cb',
+                borderRadius: '5px'
+              }}>
+                {toastMessage}
+              </div>
+            )}
           </>
         )}
 
