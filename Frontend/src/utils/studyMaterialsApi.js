@@ -40,7 +40,7 @@ export const fetchStudyMaterials = async (filters = {}) => {
 export const downloadStudyMaterial = async (materialId) => {
   try {
     const token = localStorage.getItem('authToken');
-    
+
     const response = await fetch(`${API_BASE_URL}/api/study-materials/download/${materialId}`, {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -48,8 +48,15 @@ export const downloadStudyMaterial = async (materialId) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (parseError) {
+        // If JSON parsing fails, use default message
+        console.warn('Could not parse error response:', parseError);
+      }
+      throw new Error(errorMessage);
     }
 
     return response;
