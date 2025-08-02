@@ -595,32 +595,12 @@ const MockTestAttempt = () => {
               <button onClick={() => setShowInstructions(false)}>×</button>
             </div>
             <div className="instructions-content">
-              {Array.isArray(testData.instructions) ? (
+              {Array.isArray(testData.instructions) && testData.instructions.length > 0 ? (
                 testData.instructions.map((instruction, index) => (
-                  <div key={index}>
-                    {typeof instruction === 'object' && instruction !== null ? (
-                      <>
-                        {instruction.general && <p>{instruction.general}</p>}
-                        {instruction.sectionSpecific && <p>{instruction.sectionSpecific}</p>}
-                        {!instruction.general && !instruction.sectionSpecific && (
-                          <p>{JSON.stringify(instruction)}</p>
-                        )}
-                      </>
-                    ) : (
-                      <p>{instruction}</p>
-                    )}
-                  </div>
+                  <p key={index}>{String(instruction)}</p>
                 ))
-              ) : typeof testData.instructions === 'object' && testData.instructions !== null ? (
-                <div>
-                  {testData.instructions.general && <p>{testData.instructions.general}</p>}
-                  {testData.instructions.sectionSpecific && <p>{testData.instructions.sectionSpecific}</p>}
-                  {!testData.instructions.general && !testData.instructions.sectionSpecific && (
-                    <p>{JSON.stringify(testData.instructions)}</p>
-                  )}
-                </div>
               ) : (
-                <p>{testData.instructions || 'No instructions available'}</p>
+                <p>No instructions available</p>
               )}
             </div>
           </div>
