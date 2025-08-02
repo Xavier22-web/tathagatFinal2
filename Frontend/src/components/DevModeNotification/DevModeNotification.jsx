@@ -8,8 +8,15 @@ const DevModeNotification = () => {
     const checkBackendStatus = async () => {
       try {
         const response = await fetch('http://localhost:5000/api/health');
-        const data = await response.json();
-        if (data.status === 'ok') {
+        let data;
+        try {
+          data = await response.json();
+        } catch (parseError) {
+          console.warn('Failed to parse backend health response:', parseError);
+          data = { status: 'error' };
+        }
+
+        if (response.ok && data.status === 'ok') {
           setBackendStatus('connected');
         } else {
           setBackendStatus('error');
