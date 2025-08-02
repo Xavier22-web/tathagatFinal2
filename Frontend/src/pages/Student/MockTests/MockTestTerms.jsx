@@ -73,10 +73,21 @@ const MockTestTerms = () => {
       });
 
       console.log('Response status:', response.status);
-      const data = await response.json();
-      console.log('Response data:', data);
 
-      if (response.ok && data.success && data.token) {
+      let data;
+      let parseSuccess = false;
+
+      try {
+        data = await response.json();
+        parseSuccess = true;
+        console.log('Response data:', data);
+      } catch (parseError) {
+        console.error('Failed to parse dev login response:', parseError);
+        parseSuccess = false;
+        data = { success: false, message: 'Invalid response from server' };
+      }
+
+      if (response.ok && parseSuccess && data.success && data.token) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         console.log('✅ Development user logged in successfully');
@@ -84,8 +95,9 @@ const MockTestTerms = () => {
         alert('Development user logged in successfully! You can now start the test.');
         return true;
       } else {
-        console.error('❌ Dev login failed:', data);
-        alert('Development login failed: ' + (data.message || 'Unknown error'));
+        const errorMessage = parseSuccess && data.message ? data.message : 'Development login failed';
+        console.error('❌ Dev login failed:', errorMessage);
+        alert('Development login failed: ' + errorMessage);
         return false;
       }
     } catch (error) {
