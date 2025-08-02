@@ -354,12 +354,28 @@ const MockTestTerms = () => {
             </div>
 
             <div className="action-buttons">
-              <button 
+              <button
                 className="cat-btn cat-btn-back"
                 onClick={() => navigate(-1)}
               >
                 Previous
               </button>
+
+              {/* Development Login Button - Only show if not logged in */}
+              {(!localStorage.getItem('authToken') || localStorage.getItem('authToken') === 'null') && (
+                <button
+                  className="cat-btn cat-btn-dev"
+                  onClick={handleDevLogin}
+                  style={{
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    margin: '0 10px'
+                  }}
+                >
+                  Dev Login
+                </button>
+              )}
+
               <button
                 className={`cat-btn cat-btn-continue ${!allDeclarationsChecked || isStarting ? 'disabled' : ''}`}
                 onClick={handleContinue}
