@@ -13,6 +13,12 @@ const multer = require("multer");
 
 dotenv.config();
 
+// Debug environment variables
+console.log('🔍 Environment Debug:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('MONGO_URI exists:', !!process.env.MONGO_URI);
+console.log('MONGO_URI length:', process.env.MONGO_URI ? process.env.MONGO_URI.length : 0);
+
 const Connection = require("./dbConnection");
 Connection();
 
@@ -371,7 +377,7 @@ const addSampleAnnouncements = async () => {
 
         // Display summary
         const totalAnnouncements = await Announcement.countDocuments();
-        console.log(`\n📢 Total announcements in database: ${totalAnnouncements}`);
+        console.log(`\n�� Total announcements in database: ${totalAnnouncements}`);
 
     } catch (error) {
         console.error('❌ Error adding sample announcements:', error);
