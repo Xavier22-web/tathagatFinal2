@@ -383,16 +383,17 @@ const MockTestAttempt = () => {
                     <input
                       type="radio"
                       name={`question-${questionId}`}
-                      value={option}
+                      value={typeof option === 'object' ? option.text || JSON.stringify(option) : option}
                       checked={isSelected}
-                      onChange={() => handleAnswerSelect(option)}
+                      onChange={() => handleAnswerSelect(typeof option === 'object' ? option.text || JSON.stringify(option) : option)}
                     />
                     <span className="option-indicator">{optionLabel}</span>
-                  {option.optionImage && (
-  <img src={option.optionImage} alt="option" className="option-image" />
-)}
-
-
+                    <span className="option-text">
+                      {typeof option === 'object' ? (option.text || JSON.stringify(option)) : option}
+                    </span>
+                    {typeof option === 'object' && option.optionImage && (
+                      <img src={option.optionImage} alt="option" className="option-image" />
+                    )}
                   </label>
                 );
               })}
