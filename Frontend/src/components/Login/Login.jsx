@@ -234,6 +234,48 @@ const Login = ({ onClose, setUser }) => {
             <button className="tllogin-btn" onClick={() => setStep("email")}>
               Login with email
             </button>
+
+            {/* Demo Login Button */}
+            <div style={{ margin: '20px 0', textAlign: 'center' }}>
+              <div style={{
+                borderTop: '1px solid #ddd',
+                margin: '20px 0 15px 0',
+                position: 'relative'
+              }}>
+                <span style={{
+                  background: 'white',
+                  padding: '0 15px',
+                  color: '#666',
+                  fontSize: '14px',
+                  position: 'absolute',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  top: '-10px'
+                }}>
+                  या
+                </span>
+              </div>
+              <button
+                className="tllogin-btn"
+                onClick={handleDemoLogin}
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  color: 'white',
+                  marginTop: '10px'
+                }}
+              >
+                🚀 Demo Login (No OTP needed)
+              </button>
+              <p style={{
+                fontSize: '12px',
+                color: '#666',
+                marginTop: '5px',
+                textAlign: 'center'
+              }}>
+                Instant access for testing
+              </p>
+            </div>
           </>
         )}
 
