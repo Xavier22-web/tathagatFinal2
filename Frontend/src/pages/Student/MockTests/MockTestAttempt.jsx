@@ -506,9 +506,13 @@ const MockTestAttempt = () => {
 
           <div className="question-content">
             <div className="question-text">
-              {currentQuestionData?.questionText?.split('\n').map((line, index) => (
-                <p key={index}>{line}</p>
-              ))}
+              {currentQuestionData?.questionText ? (
+                currentQuestionData.questionText.split('\n').map((line, index) => (
+                  <p key={index}>{line}</p>
+                ))
+              ) : (
+                <p>Loading question...</p>
+              )}
             </div>
 
             {currentQuestionData?.images?.map((image, index) => (
