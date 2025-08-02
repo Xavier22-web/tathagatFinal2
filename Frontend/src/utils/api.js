@@ -33,22 +33,36 @@ export const fetchWithErrorHandling = async (url, options = {}) => {
 
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // Try to parse JSON first, then handle errors
+    let responseData;
+    try {
+      responseData = await response.json();
+    } catch (parseError) {
+      // If JSON parsing fails, create a basic error response
+      responseData = {
+        success: false,
+        message: `HTTP ${response.status}: ${response.statusText}`
+      };
     }
 
-    return await response.json();
+    if (!response.ok) {
+      // Now we can safely access the response data without re-reading the stream
+      const errorMessage = responseData.message || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    return responseData;
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     if (error.name === 'AbortError') {
       throw new Error('Request timeout - backend server may be unavailable');
     }
-    
+
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error('Cannot connect to backend server. Please check if the server is running.');
     }
-    
+
     throw error;
   }
 };
