@@ -23,8 +23,13 @@ export const fetchStudyMaterials = async (filters = {}) => {
       }
     });
 
-    const data = await response.json();
-    
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      data = { success: false, message: `HTTP ${response.status}: ${response.statusText}` };
+    }
+
     if (!response.ok) {
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }
