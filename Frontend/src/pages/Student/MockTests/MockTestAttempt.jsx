@@ -413,20 +413,21 @@ const MockTestAttempt = () => {
               {currentQuestionData?.options?.map((option, index) => {
                 const optionLabel = String.fromCharCode(65 + index); // A, B, C, D
                 const questionId = currentQuestionData._id;
-                const isSelected = responses[questionId] === option;
-                
+                const optionText = typeof option === 'object' ? option.optionText : option;
+                const isSelected = responses[questionId] === optionText;
+
                 return (
                   <label key={index} className={`option-label ${isSelected ? 'selected' : ''}`}>
                     <input
                       type="radio"
                       name={`question-${questionId}`}
-                      value={typeof option === 'object' ? option.text || JSON.stringify(option) : option}
+                      value={optionText}
                       checked={isSelected}
-                      onChange={() => handleAnswerSelect(typeof option === 'object' ? option.text || JSON.stringify(option) : option)}
+                      onChange={() => handleAnswerSelect(optionText)}
                     />
                     <span className="option-indicator">{optionLabel}</span>
                     <span className="option-text">
-                      {typeof option === 'object' ? (option.text || JSON.stringify(option)) : option}
+                      {optionText}
                     </span>
                     {typeof option === 'object' && option.optionImage && (
                       <img src={option.optionImage} alt="option" className="option-image" />
