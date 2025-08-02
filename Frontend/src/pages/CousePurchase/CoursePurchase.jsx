@@ -87,6 +87,12 @@ const CoursePurchase = () => {
     console.log("🔍 Starting payment for course:", course._id);
 
     try {
+      console.log("🔍 Course details:", {
+        id: course._id,
+        name: course.name || course.title,
+        price: course.price
+      });
+
       // ✅ 1️⃣ Check if already unlocked
       const checkRes = await fetch(
         "http://localhost:5000/api/user/student/my-courses",
