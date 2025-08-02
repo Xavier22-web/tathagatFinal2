@@ -121,6 +121,8 @@ const MockTestTerms = () => {
         }
       }
 
+      console.log('🚀 Starting test with token:', authToken ? authToken.substring(0, 20) + '...' : 'NO TOKEN');
+
       const response = await fetch(`/api/mock-tests/test/${testId}/start`, {
         method: 'POST',
         headers: {
@@ -130,15 +132,40 @@ const MockTestTerms = () => {
         body: JSON.stringify({}) // Add empty body to prevent stream issues
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      console.log('Response status:', response.status);
+
+      let data;
+      try {
+        data = await response.json();
+        console.log('Response data:', data);
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        data = { success: false, message: `Server error: ${response.status}` };
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        const errorMsg = data.message || `HTTP error! status: ${response.status}`;
+        console.error('❌ Start test failed:', errorMsg);
+
+        if (response.status === 401) {
+          alert('Authentication failed. Please try logging in again.');
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+        } else if (response.status === 400 && data.message?.includes('Invalid user ID')) {
+          alert('Invalid user authentication. Please try development login.');
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+        } else {
+          alert('Error: ' + errorMsg);
+        }
+        return;
+      }
+
       if (data.success) {
         // Handle both new attempt and existing attempt (resume)
         const attemptId = data.attempt?._id || data.attemptId;
         if (attemptId) {
+          console.log('✅ Test started successfully, redirecting to:', attemptId);
           navigate(`/student/mock-test/${testId}/attempt/${attemptId}`);
         } else {
           throw new Error('No attempt ID received from server');
