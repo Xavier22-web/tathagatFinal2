@@ -322,7 +322,9 @@ const startTestAttempt = async (req, res) => {
         title: test.title,
         duration: test.duration,
         sections: questionsWithSections,
-        instructions: test.instructions
+        instructions: Array.isArray(test.instructions)
+          ? test.instructions
+          : (test.instructions ? [test.instructions] : [])
       }
     });
   } catch (error) {
