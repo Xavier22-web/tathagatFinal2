@@ -775,6 +775,121 @@ const MockTestAttempt = () => {
           </div>
         </div>
       )}
+
+      {/* Section Result Modal */}
+      {showSectionResult && currentSectionResult && (
+        <div className="modal-overlay">
+          <div className="section-result-modal">
+            <div className="section-result-header">
+              <h3>Section Result - {currentSectionResult.sectionName}</h3>
+            </div>
+            <div className="section-result-content">
+              <div className="result-summary">
+                <div className="result-stats">
+                  <div className="stat-item">
+                    <span className="stat-label">Total Questions:</span>
+                    <span className="stat-value">{currentSectionResult.totalQuestions}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Answered:</span>
+                    <span className="stat-value answered">{currentSectionResult.answered}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Not Answered:</span>
+                    <span className="stat-value not-answered">{currentSectionResult.notAnswered}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Marked for Review:</span>
+                    <span className="stat-value marked">{currentSectionResult.markedForReview}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Not Visited:</span>
+                    <span className="stat-value not-visited">{currentSectionResult.notVisited}</span>
+                  </div>
+                </div>
+
+                <div className="score-summary">
+                  <h4>Section Performance</h4>
+                  <div className="score-item">
+                    <span>Attempted: {currentSectionResult.answered} questions</span>
+                  </div>
+                  <div className="score-item">
+                    <span>Percentage: {((currentSectionResult.answered / currentSectionResult.totalQuestions) * 100).toFixed(1)}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="section-result-actions">
+              {currentSection < testData?.sections?.length - 1 ? (
+                <button className="result-btn primary" onClick={proceedToNextSection}>
+                  Continue to Next Section →
+                </button>
+              ) : (
+                <button className="result-btn primary" onClick={proceedToNextSection}>
+                  Continue to Submit
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Final Result Modal */}
+      {showFinalResult && finalResult && (
+        <div className="modal-overlay">
+          <div className="final-result-modal">
+            <div className="final-result-header">
+              <h3>Test Complete - Final Results</h3>
+            </div>
+            <div className="final-result-content">
+              <div className="overall-summary">
+                <div className="overall-stats">
+                  <div className="big-stat">
+                    <span className="big-stat-label">Overall Score</span>
+                    <span className="big-stat-value">{finalResult.totalAnswered}/{finalResult.totalQuestions}</span>
+                    <span className="big-stat-percentage">{finalResult.percentage.toFixed(1)}%</span>
+                  </div>
+                </div>
+
+                <div className="section-wise-results">
+                  <h4>Section-wise Performance</h4>
+                  <table className="results-table">
+                    <thead>
+                      <tr>
+                        <th>Section</th>
+                        <th>Questions</th>
+                        <th>Answered</th>
+                        <th>Not Answered</th>
+                        <th>Marked</th>
+                        <th>Not Visited</th>
+                        <th>%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {finalResult.sections.map((section, index) => (
+                        <tr key={index}>
+                          <td className="section-name">{section.sectionName}</td>
+                          <td>{section.totalQuestions}</td>
+                          <td className="answered">{section.answered}</td>
+                          <td className="not-answered">{section.notAnswered}</td>
+                          <td className="marked">{section.markedForReview}</td>
+                          <td className="not-visited">{section.notVisited}</td>
+                          <td>{((section.answered / section.totalQuestions) * 100).toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div className="final-result-actions">
+              <button className="result-btn primary" onClick={() => navigate('/student/mock-tests')}>
+                Back to Mock Tests
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
