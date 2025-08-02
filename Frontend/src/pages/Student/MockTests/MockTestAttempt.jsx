@@ -351,15 +351,11 @@ const MockTestAttempt = () => {
   };
 
   const getCurrentQuestion = () => {
-    const question = testData?.sections[currentSection]?.questions[currentQuestion];
-    console.log('Getting current question:', {
-      currentSection,
-      currentQuestion,
-      sectionName: testData?.sections[currentSection]?.name,
-      totalQuestions: testData?.sections[currentSection]?.questions?.length,
-      question: question
-    });
-    return question;
+    if (!testData?.sections?.[currentSection]?.questions) {
+      console.warn('No questions found for current section:', currentSection);
+      return null;
+    }
+    return testData.sections[currentSection].questions[currentQuestion];
   };
 
   const getQuestionStatus = (questionIndex) => {
