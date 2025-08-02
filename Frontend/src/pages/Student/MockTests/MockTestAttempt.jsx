@@ -229,28 +229,27 @@ const MockTestAttempt = () => {
     const sectionQuestions = section.questions || [];
 
     let answered = 0;
-    let correct = 0;
-    let incorrect = 0;
     let markedCount = 0;
-    let visited = 0;
+    let visited = visitedQuestions.size; // Current section visited questions
 
-    sectionQuestions.forEach((questionId, index) => {
+    // For current section, use current visitedQuestions state
+    // For other sections, we'd need to track separately (simplified for now)
+
+    sectionQuestions.forEach((questionId, localIndex) => {
       const response = responses[questionId];
-      const isMarked = markedForReview.has(index);
-      const isVisited = visitedQuestions.has(index);
+      const globalQuestionIndex = localIndex; // Simplified - using local index
 
-      if (isVisited) visited++;
-      if (isMarked) markedCount++;
+      if (markedForReview.has(globalQuestionIndex)) {
+        markedCount++;
+      }
 
-      if (response) {
+      if (response && response.trim() !== '') {
         answered++;
-        // For now, we'll assume correctness check happens on backend
-        // This is a simplified calculation
       }
     });
 
     const notAnswered = sectionQuestions.length - answered;
-    const notVisited = sectionQuestions.length - visited;
+    const notVisited = Math.max(0, sectionQuestions.length - visited);
 
     return {
       sectionName: section.name,
@@ -258,11 +257,11 @@ const MockTestAttempt = () => {
       answered,
       notAnswered,
       markedForReview: markedCount,
-      visited,
+      visited: Math.min(visited, sectionQuestions.length),
       notVisited,
       correct: 0, // Will be calculated on backend
       incorrect: 0, // Will be calculated on backend
-      score: answered * 3 - incorrect * 1, // Simplified calculation
+      score: answered * 3, // Simplified calculation (no negative marking for now)
       maxScore: sectionQuestions.length * 3
     };
   };
