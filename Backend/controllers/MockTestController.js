@@ -178,7 +178,7 @@ const getTestDetails = async (req, res) => {
     if (userId) {
       try {
         const mongoose = require('mongoose');
-        if (userId === 'dev_user_id') {
+        if (userId === '507f1f77bcf86cd799439011') {
           // For dev user, don't check existing attempts to allow multiple attempts
           existingAttempt = null;
         } else if (mongoose.Types.ObjectId.isValid(userId)) {
