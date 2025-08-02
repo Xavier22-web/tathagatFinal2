@@ -98,32 +98,44 @@ app.get("/api/test", (req, res) => {
 
 // ======================= Development Test User ========================================
 app.post("/api/dev/login", (req, res) => {
-    const jwt = require('jsonwebtoken');
-    const mongoose = require('mongoose');
+    try {
+        const jwt = require('jsonwebtoken');
+        const mongoose = require('mongoose');
 
-    console.log('🔍 Development login request received');
+        console.log('🔍 Development login request received');
 
-    // Create a fixed ObjectId for development user
-    const devUserId = '507f1f77bcf86cd799439011'; // Fixed valid ObjectId for development
+        // Create a fixed ObjectId for development user
+        const devUserId = '507f1f77bcf86cd799439011'; // Fixed valid ObjectId for development
 
-    // Create a development user token
-    const devUser = {
-        id: devUserId,
-        email: 'dev@test.com',
-        name: 'Development User',
-        role: 'student'
-    };
+        // Create a development user token
+        const devUser = {
+            id: devUserId,
+            email: 'dev@test.com',
+            name: 'Development User',
+            role: 'student'
+        };
 
-    const token = jwt.sign(devUser, process.env.JWT_SECRET || 'test_secret_key_for_development', { expiresIn: '24h' });
+        const jwtSecret = process.env.JWT_SECRET || 'test_secret_key_for_development';
+        console.log('JWT Secret exists:', !!jwtSecret);
 
-    console.log('✅ Development token created for user:', devUserId);
+        const token = jwt.sign(devUser, jwtSecret, { expiresIn: '24h' });
 
-    res.status(200).json({
-        success: true,
-        message: "Development user logged in",
-        token: token,
-        user: devUser
-    });
+        console.log('✅ Development token created for user:', devUserId);
+
+        res.status(200).json({
+            success: true,
+            message: "Development user logged in",
+            token: token,
+            user: devUser
+        });
+    } catch (error) {
+        console.error('❌ Dev login error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Development login failed",
+            error: error.message
+        });
+    }
 });
 
 // ======================= Debug Token Validation ========================================
