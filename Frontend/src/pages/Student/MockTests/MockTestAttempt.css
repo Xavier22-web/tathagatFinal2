@@ -1123,4 +1123,32 @@
   .scratchpad-modal {
     height: 300px;
   }
+
+  .section-result-modal,
+  .final-result-modal {
+    width: 95%;
+    max-width: 500px;
+    max-height: 85vh;
+  }
+
+  .result-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .results-table {
+    font-size: 12px;
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 6px 4px;
+  }
+
+  .big-stat-value {
+    font-size: 24px;
+  }
+
+  .big-stat-percentage {
+    font-size: 18px;
+  }
 }
